@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Millies - Event Calendar</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- Top Navigation Bar -->
+        <nav class="top-navbar">
+            <div class="navbar-container">
+                <div class="navbar-logo">
+                    <a href="https://www.millieshomemade.com">
+                        <img src="images/millies-logo.png" alt="millie's" class="millies-logo-image">
+                    </a>
+                </div>
+                <div class="middle-nav">
+                    <a href="https://www.millieshomemade.com/flavors/" class="top-nav-middle">FLAVORS</a>
+                    <a href="https://www.millieshomemade.com/about-millies-ice-cream/" class="top-nav-middle">OUR STORY</a>
+                    <a href="index.html" class="top-nav-middle">CATERING</a>
+                    <a href="https://www.milliesfranchise.com" class="top-nav-middle">FRANCHISING</a>
+                    <a href="https://www.millieshomemade.com/locations/" class="top-nav-middle">LOCATIONS</a>
+                    <a href="https://www.millieshomemade.com/contact/" class="top-nav-middle">CONTACT</a>
+                </div>
+                <div class="navbar-cta">
+                    <a href="https://www.millieshomemade.com/order-now/" class="order-button">ORDER NOW</a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Header Section -->
+        <header class="main-hero-header">
+            <div class="hero-container">
+                <img src="images/calendar-header.png" alt="Millie's Events Calendar Header" class="calendar-header-image">
+            </div>
+            <nav class="hero-nav-bar">
+                <div class="event-name-bar-inner" id="nav-wrapper">
+                    <div class="slick-list">
+                        <div class="slick-track" id="nav-track">
+                            <!-- Original set -->
+                            <div class="event-type-name program black slick-slide" data-index="0">PARTIES</div>
+                            <div class="event-type-name program black slick-slide" data-index="1">GAMES</div>
+                            <div class="event-type-name program black slick-slide" data-index="2">UNLIMITED ICE CREAM</div>
+                            <div class="event-type-name program black slick-slide" data-index="3">FUN</div>
+                            <!-- First duplicate set for seamless loop -->
+                            <div class="event-type-name program black slick-slide slick-cloned" data-index="0">PARTIES</div>
+                            <div class="event-type-name program black slick-slide slick-cloned" data-index="1">GAMES</div>
+                            <div class="event-type-name program black slick-slide slick-cloned" data-index="2">UNLIMITED ICE CREAM</div>
+                            <div class="event-type-name program black slick-slide slick-cloned" data-index="3">FUN</div>
+                            <!-- Second duplicate set to ensure no gaps -->
+                            <div class="event-type-name program black slick-slide slick-cloned" data-index="0">PARTIES</div>
+                            <div class="event-type-name program black slick-slide slick-cloned" data-index="1">GAMES</div>
+                            <div class="event-type-name program black slick-slide slick-cloned" data-index="2">UNLIMITED ICE CREAM</div>
+                            <div class="event-type-name program black slick-slide slick-cloned" data-index="3">FUN</div>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="container">
+            <main>
+                <div class="calendar-section">
+                    <!-- Events Display -->
+                    <div class="calendar-content-section">
+                        <div id="events-container" class="events-container">
+                            <div class="loading">Loading events...</div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="calendar.js"></script>
+</body>
+</html>
+

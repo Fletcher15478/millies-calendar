@@ -1,0 +1,16 @@
+[
+  {
+    "id": "1762965715140",
+    "title": "Dinner with Handsome Guy",
+    "date": "2025-11-14",
+    "description": "Dinner with Fletcher",
+    "time": "18:45",
+    "location": "1429 Georges Fairchance Rd. Smithfield, PA 15478",
+    "featured": false,
+    "outside": false,
+    "publicEvent": false,
+    "petFriendly": false,
+    "photo": "/uploads/event-1762965715127-4309767.jpeg",
+    "createdAt": "2025-11-12T16:41:55.140Z"
+  }
+]

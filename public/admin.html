@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Millies - Admin Panel</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="admin-page">
+    <div class="page-wrapper admin-page-wrapper">
+        <div class="container">
+            <!-- Login Form -->
+            <div id="login-section" class="login-section">
+                <div class="login-container">
+                    <img src="images/millies-logo.png" alt="Millie's" class="admin-logo">
+                    <h1 class="uppercase-title">Admin Login</h1>
+                    <form id="login-form" class="login-form">
+                        <div class="form-group">
+                            <label for="login-username">Username</label>
+                            <input type="email" id="login-username" required autocomplete="username">
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password">Password</label>
+                            <input type="password" id="login-password" required autocomplete="current-password">
+                        </div>
+                        <div id="login-error" class="error-message" style="display: none;"></div>
+                        <button type="submit" class="btn-primary">Login</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Admin Panel (hidden until logged in) -->
+            <div id="admin-panel" class="admin-section" style="display: none;">
+                <header>
+                    <div class="admin-header-top">
+                        <img src="images/millies-logo.png" alt="Millie's" class="admin-logo">
+                        <h1 class="uppercase-title">Admin Panel</h1>
+                        <button id="logout-btn" class="btn-secondary logout-btn">Logout</button>
+                    </div>
+                </header>
+                <div class="admin-welcome">
+                    <div class="welcome-icon">👋</div>
+                    <h2 class="welcome-title">Welcome, Fletcher!</h2>
+                    <p class="welcome-subtitle">Manage your events with ease</p>
+                </div>
+                
+                <div class="admin-stats">
+                    <div class="stat-card">
+                        <div class="stat-icon">📅</div>
+                        <div class="stat-info">
+                            <div class="stat-number" id="total-events">0</div>
+                            <div class="stat-label">Total Events</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⭐</div>
+                        <div class="stat-info">
+                            <div class="stat-number" id="featured-events">0</div>
+                            <div class="stat-label">Featured</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="admin-header-section">
+                    <h2 class="section-title">Event Management</h2>
+                    <p class="section-description">Create, edit, and organize your calendar events</p>
+                </div>
+
+                <div class="admin-controls">
+                    <button id="add-event-btn" class="btn-primary btn-add-event">
+                        <span class="btn-icon">➕</span>
+                        <span>Add New Event</span>
+                    </button>
+                </div>
+
+                <!-- Event Form Modal -->
+                <div id="event-modal" class="modal">
+                    <div class="modal-content">
+                        <span class="close">&times;</span>
+                        <h2 id="modal-title">Add New Event</h2>
+                        <form id="event-form">
+                            <input type="hidden" id="event-id">
+                            
+                            <div class="form-group">
+                                <label for="event-title">Event Title *</label>
+                                <input type="text" id="event-title" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="event-date">Date *</label>
+                                <input type="date" id="event-date" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="event-time">Time *</label>
+                                <div class="time-selector">
+                                    <select id="event-hour" required>
+                                        <option value="">Hour</option>
+                                        <option value="01">1</option>
+                                        <option value="02">2</option>
+                                        <option value="03">3</option>
+                                        <option value="04">4</option>
+                                        <option value="05">5</option>
+                                        <option value="06">6</option>
+                                        <option value="07">7</option>
+                                        <option value="08">8</option>
+                                        <option value="09">9</option>
+                                        <option value="10">10</option>
+                                        <option value="11">11</option>
+                                        <option value="12">12</option>
+                                    </select>
+                                    <span class="time-separator">:</span>
+                                    <select id="event-minute" required>
+                                        <option value="">Minute</option>
+                                        <option value="00">00</option>
+                                        <option value="15">15</option>
+                                        <option value="30">30</option>
+                                        <option value="45">45</option>
+                                    </select>
+                                    <select id="event-ampm" required>
+                                        <option value="AM">AM</option>
+                                        <option value="PM">PM</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="event-featured">
+                                    <span>Featured Event (appears at top of calendar)</span>
+                                </label>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="event-outside">
+                                    <span>Outside Event</span>
+                                </label>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="event-public">
+                                    <span>Public Event</span>
+                                </label>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="event-pet-friendly">
+                                    <span>Pet Friendly</span>
+                                </label>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="event-description">Description *</label>
+                                <textarea id="event-description" rows="4" required></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="event-location">Location (optional - will link to Google Maps)</label>
+                                <input type="text" id="event-location" placeholder="e.g., 123 Main St, City, State">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="event-photo">Photo</label>
+                                <input type="file" id="event-photo" accept="image/*">
+                                <div id="photo-preview" class="photo-preview"></div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn-primary">Save Event</button>
+                                <button type="button" class="btn-secondary" id="cancel-btn">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Events List -->
+                <div id="admin-events-container" class="admin-events-container">
+                    <div class="loading">Loading events...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>
+

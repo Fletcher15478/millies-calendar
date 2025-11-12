@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Millies - Events & Catering</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="landing-page">
+    <div class="page-wrapper">
+        <!-- Top Navigation Bar -->
+        <nav class="top-navbar">
+            <div class="navbar-container">
+                <div class="navbar-logo">
+                    <a href="https://www.millieshomemade.com">
+                        <img src="images/millies-logo.png" alt="millie's" class="millies-logo-image">
+                    </a>
+                </div>
+                <div class="middle-nav">
+                    <a href="https://www.millieshomemade.com/flavors/" class="top-nav-middle">FLAVORS</a>
+                    <a href="https://www.millieshomemade.com/about-millies-ice-cream/" class="top-nav-middle">OUR STORY</a>
+                    <a href="index.html" class="top-nav-middle">CATERING</a>
+                    <a href="https://www.milliesfranchise.com" class="top-nav-middle">FRANCHISING</a>
+                    <a href="https://www.millieshomemade.com/locations/" class="top-nav-middle">LOCATIONS</a>
+                    <a href="https://www.millieshomemade.com/contact/" class="top-nav-middle">CONTACT</a>
+                </div>
+                <div class="navbar-cta">
+                    <a href="https://www.millieshomemade.com/order-now/" class="order-button">ORDER NOW</a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Header Section -->
+        <header class="main-hero-header">
+            <div class="hero-container">
+                <img src="images/lander.png" alt="Millie's Events & Catering" class="calendar-header-image">
+            </div>
+            <nav class="hero-nav-bar">
+                <div class="event-name-bar-inner" id="nav-wrapper">
+                    <div class="slick-list">
+                        <div class="slick-track" id="nav-track">
+                            <!-- Original set -->
+                            <div class="event-type-name program black slick-slide" data-index="0">PARTIES</div>
+                            <div class="event-type-name program black slick-slide" data-index="1">GAMES</div>
+                            <div class="event-type-name program black slick-slide" data-index="2">UNLIMITED ICE CREAM</div>
+                            <div class="event-type-name program black slick-slide" data-index="3">FUN</div>
+                            <!-- First duplicate set for seamless loop -->
+                            <div class="event-type-name program black slick-slide slick-cloned" data-index="0">PARTIES</div>
+                            <div class="event-type-name program black slick-slide slick-cloned" data-index="1">GAMES</div>
+                            <div class="event-type-name program black slick-slide slick-cloned" data-index="2">UNLIMITED ICE CREAM</div>
+                            <div class="event-type-name program black slick-slide slick-cloned" data-index="3">FUN</div>
+                            <!-- Second duplicate set to ensure no gaps -->
+                            <div class="event-type-name program black slick-slide slick-cloned" data-index="0">PARTIES</div>
+                            <div class="event-type-name program black slick-slide slick-cloned" data-index="1">GAMES</div>
+                            <div class="event-type-name program black slick-slide slick-cloned" data-index="2">UNLIMITED ICE CREAM</div>
+                            <div class="event-type-name program black slick-slide slick-cloned" data-index="3">FUN</div>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="container">
+            <main>
+                <div class="landing-section">
+                    <div class="landing-buttons">
+                        <a href="https://www.millieshomemade.com/birthday-parties/?srsltid=AfmBOoo7ppkeQmFosMopIbsRMZnPinS-BbQ1atz1yPK2cpNkjRYDQbWQ" class="landing-button" id="button-1" style="background-image: url('images/Birthdays - icon image.png');">
+                            <span class="button-text">Parties</span>
+                        </a>
+                        <a href="https://www.millieshomemade.com/fundraising/" class="landing-button" id="button-2" style="background-image: url('images/Fundraiser - icon image.png');">
+                            <span class="button-text">Fundraisers</span>
+                        </a>
+                        <a href="https://www.millieshomemade.com/events/" class="landing-button" id="button-3" style="background-image: url('images/Catering.png');">
+                            <span class="button-text">Catering</span>
+                        </a>
+                        <a href="calendar.html" class="landing-button" id="button-4" style="background-image: url('images/Calendar - icon image.png');">
+                            <span class="button-text">Calendar</span>
+                        </a>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // Use the exact same logic from calendar.js for the swivel bar
+        const API_BASE_URL = window.location.origin;
+
+        // Carousel scrolling navigation - smooth infinite loop
+        function initStepScrolling() {
+            const navTrack = document.getElementById('nav-track');
+            const allItems = document.querySelectorAll('.event-type-name');
+            const navBar = document.querySelector('.hero-nav-bar');
+            
+            if (!navTrack || allItems.length === 0) return;
+            
+            const scrollDelay = 2000; // 2 seconds between scrolls
+            let currentScrollPosition = 0;
+            
+            // Update active/centered classes - only the centered item is bold
+            function updateActiveClass() {
+                const navBarWidth = navBar.offsetWidth;
+                const centerX = navBarWidth / 2;
+                
+                allItems.forEach((item) => {
+                    const rect = item.getBoundingClientRect();
+                    const navBarRect = navBar.getBoundingClientRect();
+                    const itemCenterX = rect.left - navBarRect.left + (rect.width / 2);
+                    const distanceFromCenter = Math.abs(itemCenterX - centerX);
+                    
+                    // If item is within 50px of center, make it bold
+                    if (distanceFromCenter < 50) {
+                        item.classList.add('slick-current', 'slick-active', 'slick-center');
+                    } else {
+                        item.classList.remove('slick-current', 'slick-active', 'slick-center');
+                    }
+                });
+            }
+            
+            // Find the next item to the right and scroll to it
+            function scrollToNextItem() {
+                const navBarWidth = navBar.offsetWidth;
+                const centerX = navBarWidth / 2;
+                
+                // Get all items with their positions
+                const itemsWithPositions = Array.from(allItems).map(item => {
+                    const rect = item.getBoundingClientRect();
+                    const navBarRect = navBar.getBoundingClientRect();
+                    const itemCenterX = rect.left - navBarRect.left + (rect.width / 2);
+                    return {
+                        element: item,
+                        centerX: itemCenterX,
+                        width: rect.width
+                    };
+                });
+                
+                // Find the next item to the right of center
+                const nextItem = itemsWithPositions.find(item => item.centerX > centerX + 10);
+                
+                if (nextItem) {
+                    // Calculate how much to scroll to center this item
+                    const scrollAmount = nextItem.centerX - centerX;
+                    currentScrollPosition += scrollAmount;
+                    
+                    // Apply the scroll
+                    navTrack.style.transition = 'transform 0.5s ease-in-out';
+                    navTrack.style.transform = `translate3d(-${currentScrollPosition}px, 0px, 0px)`;
+                    
+                    // Update active classes
+                    setTimeout(() => {
+                        updateActiveClass();
+                    }, 50);
+                    
+                    // Check if we need to reset for infinite loop
+                    setTimeout(() => {
+                        checkInfiniteLoop();
+                    }, 550);
+                }
+                
+                // Schedule next scroll
+                setTimeout(() => {
+                    scrollToNextItem();
+                }, scrollDelay);
+            }
+            
+            // Reset position for seamless infinite loop
+            function checkInfiniteLoop() {
+                // Calculate total width of original items (non-cloned)
+                const originalItems = Array.from(allItems).filter(item => !item.classList.contains('slick-cloned'));
+                let totalWidth = 0;
+                originalItems.forEach(item => {
+                    totalWidth += item.offsetWidth;
+                });
+                
+                // If we've scrolled past the original items, reset seamlessly
+                if (currentScrollPosition >= totalWidth) {
+                    navTrack.style.transition = 'none';
+                    currentScrollPosition = currentScrollPosition - totalWidth;
+                    navTrack.style.transform = `translate3d(-${currentScrollPosition}px, 0px, 0px)`;
+                    
+                    // Force reflow
+                    void navTrack.offsetHeight;
+                    
+                    // Re-enable transition
+                    setTimeout(() => {
+                        navTrack.style.transition = 'transform 0.5s ease-in-out';
+                    }, 50);
+                }
+            }
+            
+            // Continuously update active class based on position
+            function updateActiveClassContinuously() {
+                if (navBar && navTrack) {
+                    updateActiveClass();
+                }
+                requestAnimationFrame(updateActiveClassContinuously);
+            }
+            
+            // Initialize
+            setTimeout(() => {
+                // Start with first item centered
+                currentScrollPosition = 0;
+                navTrack.style.transform = `translate3d(0px, 0px, 0px)`;
+                updateActiveClass();
+                
+                // Start continuous active class updates
+                updateActiveClassContinuously();
+                
+                // Start auto-scrolling
+                setTimeout(() => {
+                    scrollToNextItem();
+                }, scrollDelay);
+            }, 100);
+        }
+
+        // Initialize step scrolling when page loads
+        window.addEventListener('load', () => {
+            initStepScrolling();
+        });
+    </script>
+</body>
+</html>
