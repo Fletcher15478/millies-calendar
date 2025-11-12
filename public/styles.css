@@ -306,7 +306,7 @@ body.admin-page,
     width: 100%;
     height: auto;
     display: block;
-    object-fit: cover;
+    object-fit: contain;
     max-width: 100%;
     margin: 0;
     padding: 0;
@@ -321,7 +321,7 @@ body.landing-page .calendar-header-image {
     width: 100%;
     height: auto;
     display: block;
-    object-fit: cover;
+    object-fit: contain;
     max-width: 100%;
     margin: 0;
     padding: 0;
@@ -892,14 +892,14 @@ main {
 
 @media (max-width: 768px) {
     .landing-buttons {
-        grid-template-columns: 1fr;
-        gap: 20px;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
     }
     
     .landing-button {
-        padding: 40px 30px;
-        font-size: 1.5rem;
-        min-height: 200px;
+        padding: 40px 20px;
+        font-size: 1.3rem;
+        min-height: 180px;
     }
 }
 
@@ -1933,11 +1933,21 @@ footer {
 
     .hero-container {
         width: 100%;
+        overflow: visible;
     }
 
     .calendar-header-image {
         width: 100%;
         height: auto;
+        object-fit: contain;
+        margin-top: 0;
+        margin-bottom: 0;
+    }
+    
+    body.landing-page .calendar-header-image {
+        object-fit: contain;
+        margin-top: 0;
+        margin-bottom: 0;
     }
 
     .hero-nav-bar {
@@ -2027,15 +2037,15 @@ footer {
     }
 
     .landing-buttons {
-        grid-template-columns: 1fr;
-        gap: 15px;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
         padding: 0 15px;
     }
 
     .landing-button {
-        padding: 40px 20px;
-        font-size: 1.5rem;
-        min-height: 200px;
+        padding: 35px 15px;
+        font-size: 1.2rem;
+        min-height: 160px;
     }
 
     .month-header-wrapper {
@@ -2073,10 +2083,16 @@ footer {
         min-height: 250px;
     }
 
+    .landing-buttons {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        padding: 0 10px;
+    }
+
     .landing-button {
-        padding: 30px 15px;
-        font-size: 1.2rem;
-        min-height: 150px;
+        padding: 25px 10px;
+        font-size: 1rem;
+        min-height: 140px;
     }
 }
 
