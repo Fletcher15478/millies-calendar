@@ -1963,6 +1963,7 @@ footer {
 
     .hero-nav-bar {
         padding: 20px 0;
+        margin-top: 10px;
     }
 
     .slick-list {
@@ -1989,6 +1990,11 @@ footer {
 
     .calendar-content-section {
         padding: 15px;
+        margin-top: -5px;
+    }
+    
+    .landing-section {
+        margin-top: -5px;
     }
 
     .services-grid {
@@ -2020,14 +2026,14 @@ footer {
     .events-tiles {
         justify-content: center;
         padding: 0 10px;
-        gap: 15px;
-        margin-top: -10px;
+        gap: 12px;
+        margin-top: -20px;
     }
 
     .event-tile {
-        width: calc(50% - 7.5px);
-        max-width: calc(50% - 7.5px);
-        min-width: calc(50% - 7.5px);
+        width: calc(55% - 6px);
+        max-width: calc(55% - 6px);
+        min-width: calc(55% - 6px);
         height: auto;
         min-height: 300px;
     }
@@ -2097,6 +2103,7 @@ footer {
         grid-template-columns: repeat(2, 1fr);
         gap: 12px;
         padding: 0 15px;
+        margin-top: -5px;
     }
 
     .landing-button {
@@ -2137,9 +2144,9 @@ footer {
     }
 
     .event-tile {
-        width: calc(50% - 5px);
-        max-width: calc(50% - 5px);
-        min-width: calc(50% - 5px);
+        width: calc(60% - 5px);
+        max-width: calc(60% - 5px);
+        min-width: calc(60% - 5px);
         min-height: 280px;
     }
     
