@@ -1998,7 +1998,7 @@ footer {
     }
     
     .month-header-wrapper {
-        margin-top: -25px;
+        margin-top: -45px;
         margin-bottom: 10px;
     }
 
@@ -2032,7 +2032,7 @@ footer {
         justify-content: center;
         padding: 0 10px;
         gap: 12px;
-        margin-top: -35px;
+        margin-top: -50px;
     }
 
     .event-tile {
@@ -2108,7 +2108,7 @@ footer {
         grid-template-columns: repeat(2, 1fr);
         gap: 12px;
         padding: 0 15px;
-        margin-top: -30px;
+        margin-top: -50px;
     }
 
     .landing-button {
