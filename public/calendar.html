@@ -18,6 +18,11 @@
                         <img src="images/millies-logo.png" alt="millie's" class="millies-logo-image">
                     </a>
                 </div>
+                <button class="mobile-menu-toggle" aria-label="Toggle menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
                 <div class="middle-nav">
                     <a href="https://www.millieshomemade.com/flavors/" class="top-nav-middle">FLAVORS</a>
                     <a href="https://www.millieshomemade.com/about-millies-ice-cream/" class="top-nav-middle">OUR STORY</a>
@@ -76,6 +81,29 @@
         </div>
     </div>
 
+    <script>
+        // Mobile menu toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+            const middleNav = document.querySelector('.middle-nav');
+            
+            if (mobileMenuToggle && middleNav) {
+                mobileMenuToggle.addEventListener('click', function() {
+                    mobileMenuToggle.classList.toggle('active');
+                    middleNav.classList.toggle('active');
+                });
+                
+                // Close menu when clicking on a link
+                const navLinks = middleNav.querySelectorAll('.top-nav-middle');
+                navLinks.forEach(link => {
+                    link.addEventListener('click', function() {
+                        mobileMenuToggle.classList.remove('active');
+                        middleNav.classList.remove('active');
+                    });
+                });
+            }
+        });
+    </script>
     <script src="calendar.js"></script>
 </body>
 </html>
