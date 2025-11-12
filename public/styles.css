@@ -331,6 +331,21 @@ body.landing-page .calendar-header-image {
     z-index: 1;
 }
 
+/* Desktop: Match lander.png size to calendar-header.png */
+@media (min-width: 769px) {
+    body.landing-page .calendar-header-image {
+        max-width: 1200px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .calendar-header-image {
+        max-width: 1200px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
 .hero-main-title {
     font-family: 'Montserrat', sans-serif;
     font-weight: 800;
@@ -2032,7 +2047,7 @@ footer {
         justify-content: center;
         padding: 0 10px;
         gap: 12px;
-        margin-top: -40px;
+        margin-top: -30px;
     }
 
     .event-tile {
