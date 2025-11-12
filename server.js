@@ -19,12 +19,18 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
+  console.log('Created uploads directory:', uploadsDir);
 }
 
 const dataDir = path.join(__dirname, 'data');
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
+  console.log('Created data directory:', dataDir);
 }
+
+// Verify directories exist on startup
+console.log('Uploads directory exists:', fs.existsSync(uploadsDir), uploadsDir);
+console.log('Data directory exists:', fs.existsSync(dataDir), dataDir);
 
 const eventsFile = path.join(dataDir, 'events.json');
 
@@ -186,9 +192,14 @@ app.post('/api/events', upload.single('photo'), (req, res) => {
     };
 
     console.log('Saving event with location:', event.location); // Debug log
+    if (req.file) {
+      console.log('Image saved to:', req.file.path);
+      console.log('Image URL will be:', `/uploads/${req.file.filename}`);
+    }
 
     events.push(event);
     saveEvents(events);
+    console.log('Event saved. Total events:', events.length);
     res.status(201).json(event);
   } catch (error) {
     res.status(500).json({ error: error.message });
