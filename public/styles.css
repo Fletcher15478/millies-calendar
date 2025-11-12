@@ -1998,7 +1998,7 @@ footer {
     }
     
     .month-header-wrapper {
-        margin-top: -60px;
+        margin-top: -50px;
         margin-bottom: 15px;
     }
 
@@ -2032,7 +2032,7 @@ footer {
         justify-content: center;
         padding: 0 10px;
         gap: 12px;
-        margin-top: -55px;
+        margin-top: -45px;
     }
 
     .event-tile {
