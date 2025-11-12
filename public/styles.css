@@ -1990,11 +1990,16 @@ footer {
 
     .calendar-content-section {
         padding: 15px;
-        margin-top: -5px;
+        margin-top: -30px;
     }
     
     .landing-section {
-        margin-top: -5px;
+        margin-top: -30px;
+    }
+    
+    .month-header-wrapper {
+        margin-top: -25px;
+        margin-bottom: 10px;
     }
 
     .services-grid {
@@ -2027,7 +2032,7 @@ footer {
         justify-content: center;
         padding: 0 10px;
         gap: 12px;
-        margin-top: -20px;
+        margin-top: -35px;
     }
 
     .event-tile {
@@ -2103,7 +2108,7 @@ footer {
         grid-template-columns: repeat(2, 1fr);
         gap: 12px;
         padding: 0 15px;
-        margin-top: -5px;
+        margin-top: -30px;
     }
 
     .landing-button {
