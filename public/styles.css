@@ -1940,14 +1940,21 @@ footer {
         width: 100%;
         height: auto;
         object-fit: contain;
-        margin-top: 0;
+        margin-top: 20px;
         margin-bottom: 0;
+        max-height: none;
     }
     
     body.landing-page .calendar-header-image {
         object-fit: contain;
-        margin-top: 0;
+        margin-top: 20px;
         margin-bottom: 0;
+        max-height: none;
+        width: 100%;
+    }
+    
+    .main-hero-header {
+        margin-top: 0;
     }
 
     .hero-nav-bar {
@@ -2009,13 +2016,24 @@ footer {
     .events-tiles {
         justify-content: center;
         padding: 0 10px;
+        gap: 15px;
     }
 
     .event-tile {
-        width: 100%;
-        max-width: 100%;
+        width: calc(50% - 7.5px);
+        max-width: calc(50% - 7.5px);
+        min-width: calc(50% - 7.5px);
         height: auto;
-        min-height: 300px;
+        min-height: 250px;
+    }
+    
+    .event-tile.no-image {
+        min-height: 250px;
+        height: 250px;
+    }
+    
+    .event-tile.no-image:hover {
+        min-height: 250px;
     }
 
     .modal-content {
@@ -2080,7 +2098,19 @@ footer {
     }
 
     .event-tile {
-        min-height: 250px;
+        width: calc(50% - 5px);
+        max-width: calc(50% - 5px);
+        min-width: calc(50% - 5px);
+        min-height: 220px;
+    }
+    
+    .event-tile.no-image {
+        min-height: 220px;
+        height: 220px;
+    }
+    
+    .event-tile.no-image:hover {
+        min-height: 220px;
     }
 
     .landing-buttons {

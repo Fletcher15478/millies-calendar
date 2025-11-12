@@ -134,6 +134,8 @@ app.post('/api/admin/login', async (req, res) => {
 
 // Get all events (public) - featured events first, then by date
 app.get('/api/events', (req, res) => {
+  // Always reload from file to ensure persistence
+  events = loadEvents();
   const sorted = events.sort((a, b) => {
     // Featured events first
     if (a.featured && !b.featured) return -1;
@@ -146,6 +148,8 @@ app.get('/api/events', (req, res) => {
 
 // Get single event
 app.get('/api/events/:id', (req, res) => {
+  // Always reload from file to ensure persistence
+  events = loadEvents();
   const event = events.find(e => e.id === req.params.id);
   if (!event) {
     return res.status(404).json({ error: 'Event not found' });
@@ -156,6 +160,8 @@ app.get('/api/events/:id', (req, res) => {
 // Create new event
 app.post('/api/events', upload.single('photo'), (req, res) => {
   try {
+    // Always reload from file to ensure persistence
+    events = loadEvents();
     const { title, date, description, time, featured, location, outside, publicEvent, petFriendly } = req.body;
     
     console.log('Received location:', location); // Debug log
@@ -191,6 +197,8 @@ app.post('/api/events', upload.single('photo'), (req, res) => {
 
 // Update event
 app.put('/api/events/:id', upload.single('photo'), (req, res) => {
+  // Always reload from file to ensure persistence
+  events = loadEvents();
   const eventIndex = events.findIndex(e => e.id === req.params.id);
   
   if (eventIndex === -1) {
@@ -230,6 +238,8 @@ app.put('/api/events/:id', upload.single('photo'), (req, res) => {
 
 // Delete event
 app.delete('/api/events/:id', (req, res) => {
+  // Always reload from file to ensure persistence
+  events = loadEvents();
   const eventIndex = events.findIndex(e => e.id === req.params.id);
   
   if (eventIndex === -1) {
