@@ -6,9 +6,26 @@ const path = require('path');
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const mongoose = require('mongoose');
+const Event = require('./models/Event');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// MongoDB connection
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/millies-calendar';
+
+mongoose.connect(MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => {
+  console.log('Connected to MongoDB');
+})
+.catch((error) => {
+  console.error('MongoDB connection error:', error);
+  console.log('Falling back to file-based storage if MongoDB URI not set');
+});
 
 // Middleware
 app.use(cors());
@@ -139,45 +156,77 @@ app.post('/api/admin/login', async (req, res) => {
 });
 
 // Get all events (public) - featured events first, then by date
-app.get('/api/events', (req, res) => {
-  // Always reload from file to ensure persistence
-  events = loadEvents();
-  const sorted = events.sort((a, b) => {
-    // Featured events first
-    if (a.featured && !b.featured) return -1;
-    if (!a.featured && b.featured) return 1;
-    // Then by date
-    return new Date(a.date) - new Date(b.date);
-  });
-  res.json(sorted);
+app.get('/api/events', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState === 1) {
+      // Use MongoDB
+      const events = await Event.find({}).lean();
+      const sorted = events.sort((a, b) => {
+        // Featured events first
+        if (a.featured && !b.featured) return -1;
+        if (!a.featured && b.featured) return 1;
+        // Then by date
+        return new Date(a.date) - new Date(b.date);
+      });
+      // Convert _id to id for compatibility
+      const formatted = sorted.map(e => ({
+        ...e,
+        id: e._id.toString()
+      }));
+      res.json(formatted);
+    } else {
+      // Fallback to file system
+      events = loadEvents();
+      const sorted = events.sort((a, b) => {
+        if (a.featured && !b.featured) return -1;
+        if (!a.featured && b.featured) return 1;
+        return new Date(a.date) - new Date(b.date);
+      });
+      res.json(sorted);
+    }
+  } catch (error) {
+    console.error('Error fetching events:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Get single event
-app.get('/api/events/:id', (req, res) => {
-  // Always reload from file to ensure persistence
-  events = loadEvents();
-  const event = events.find(e => e.id === req.params.id);
-  if (!event) {
-    return res.status(404).json({ error: 'Event not found' });
+app.get('/api/events/:id', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState === 1) {
+      // Use MongoDB
+      const event = await Event.findById(req.params.id).lean();
+      if (!event) {
+        return res.status(404).json({ error: 'Event not found' });
+      }
+      res.json({ ...event, id: event._id.toString() });
+    } else {
+      // Fallback to file system
+      events = loadEvents();
+      const event = events.find(e => e.id === req.params.id);
+      if (!event) {
+        return res.status(404).json({ error: 'Event not found' });
+      }
+      res.json(event);
+    }
+  } catch (error) {
+    console.error('Error fetching event:', error);
+    res.status(500).json({ error: error.message });
   }
-  res.json(event);
 });
 
 // Create new event
-app.post('/api/events', upload.single('photo'), (req, res) => {
+app.post('/api/events', upload.single('photo'), async (req, res) => {
   try {
-    // Always reload from file to ensure persistence
-    events = loadEvents();
     const { title, date, description, time, featured, location, outside, publicEvent, petFriendly } = req.body;
     
-    console.log('Received location:', location); // Debug log
+    console.log('Received location:', location);
     
     if (!title || !date || !description || !time) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    const event = {
-      id: Date.now().toString(),
+    const eventData = {
       title,
       date,
       description,
@@ -187,89 +236,153 @@ app.post('/api/events', upload.single('photo'), (req, res) => {
       outside: outside === 'true' || outside === true,
       publicEvent: publicEvent === 'true' || publicEvent === true,
       petFriendly: petFriendly === 'true' || petFriendly === true,
-      photo: req.file ? `/uploads/${req.file.filename}` : null,
-      createdAt: new Date().toISOString()
+      photo: req.file ? `/uploads/${req.file.filename}` : null
     };
 
-    console.log('Saving event with location:', event.location); // Debug log
-    if (req.file) {
-      console.log('Image saved to:', req.file.path);
-      console.log('Image URL will be:', `/uploads/${req.file.filename}`);
+    if (mongoose.connection.readyState === 1) {
+      // Use MongoDB
+      const event = new Event(eventData);
+      const savedEvent = await event.save();
+      console.log('Event saved to MongoDB:', savedEvent._id);
+      if (req.file) {
+        console.log('Image saved to:', req.file.path);
+      }
+      res.status(201).json({ ...savedEvent.toObject(), id: savedEvent._id.toString() });
+    } else {
+      // Fallback to file system
+      events = loadEvents();
+      const event = {
+        id: Date.now().toString(),
+        ...eventData,
+        createdAt: new Date().toISOString()
+      };
+      if (req.file) {
+        console.log('Image saved to:', req.file.path);
+      }
+      events.push(event);
+      saveEvents(events);
+      console.log('Event saved to file. Total events:', events.length);
+      res.status(201).json(event);
     }
-
-    events.push(event);
-    saveEvents(events);
-    console.log('Event saved. Total events:', events.length);
-    res.status(201).json(event);
   } catch (error) {
+    console.error('Error creating event:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
 // Update event
-app.put('/api/events/:id', upload.single('photo'), (req, res) => {
-  // Always reload from file to ensure persistence
-  events = loadEvents();
-  const eventIndex = events.findIndex(e => e.id === req.params.id);
-  
-  if (eventIndex === -1) {
-    return res.status(404).json({ error: 'Event not found' });
+app.put('/api/events/:id', upload.single('photo'), async (req, res) => {
+  try {
+    const { title, date, description, time, featured, location, outside, publicEvent, petFriendly } = req.body;
+
+    if (mongoose.connection.readyState === 1) {
+      // Use MongoDB
+      const event = await Event.findById(req.params.id);
+      if (!event) {
+        return res.status(404).json({ error: 'Event not found' });
+      }
+
+      if (title !== undefined) event.title = title;
+      if (date !== undefined) event.date = date;
+      if (description !== undefined) event.description = description;
+      if (time !== undefined) event.time = time;
+      if (location !== undefined) {
+        event.location = (location && typeof location === 'string' && location.trim()) ? location.trim() : null;
+      }
+      if (featured !== undefined) event.featured = featured === 'true' || featured === true;
+      if (outside !== undefined) event.outside = outside === 'true' || outside === true;
+      if (publicEvent !== undefined) event.publicEvent = publicEvent === 'true' || publicEvent === true;
+      if (petFriendly !== undefined) event.petFriendly = petFriendly === 'true' || petFriendly === true;
+      if (req.file) event.photo = `/uploads/${req.file.filename}`;
+
+      const updatedEvent = await event.save();
+      res.json({ ...updatedEvent.toObject(), id: updatedEvent._id.toString() });
+    } else {
+      // Fallback to file system
+      events = loadEvents();
+      const eventIndex = events.findIndex(e => e.id === req.params.id);
+      
+      if (eventIndex === -1) {
+        return res.status(404).json({ error: 'Event not found' });
+      }
+
+      const existingEvent = events[eventIndex];
+      let finalLocation = existingEvent.location;
+      if (location !== undefined) {
+        finalLocation = (location && typeof location === 'string' && location.trim()) ? location.trim() : null;
+      }
+
+      events[eventIndex] = {
+        ...existingEvent,
+        title: title || existingEvent.title,
+        date: date || existingEvent.date,
+        description: description || existingEvent.description,
+        time: time || existingEvent.time,
+        location: finalLocation,
+        featured: featured === 'true' || featured === true || (featured === undefined ? existingEvent.featured : false),
+        outside: outside === 'true' || outside === true || (outside === undefined ? existingEvent.outside : false),
+        publicEvent: publicEvent === 'true' || publicEvent === true || (publicEvent === undefined ? existingEvent.publicEvent : false),
+        petFriendly: petFriendly === 'true' || petFriendly === true || (petFriendly === undefined ? existingEvent.petFriendly : false),
+        photo: req.file ? `/uploads/${req.file.filename}` : existingEvent.photo,
+        updatedAt: new Date().toISOString()
+      };
+
+      saveEvents(events);
+      res.json(events[eventIndex]);
+    }
+  } catch (error) {
+    console.error('Error updating event:', error);
+    res.status(500).json({ error: error.message });
   }
-
-  const { title, date, description, time, featured, location, outside, publicEvent, petFriendly } = req.body;
-  const existingEvent = events[eventIndex];
-
-  console.log('Update - Received location:', location); // Debug log
-
-  let finalLocation = existingEvent.location;
-  if (location !== undefined) {
-    finalLocation = (location && typeof location === 'string' && location.trim()) ? location.trim() : null;
-  }
-
-  console.log('Update - Final location:', finalLocation); // Debug log
-
-  events[eventIndex] = {
-    ...existingEvent,
-    title: title || existingEvent.title,
-    date: date || existingEvent.date,
-    description: description || existingEvent.description,
-    time: time || existingEvent.time,
-    location: finalLocation,
-    featured: featured === 'true' || featured === true || (featured === undefined ? existingEvent.featured : false),
-    outside: outside === 'true' || outside === true || (outside === undefined ? existingEvent.outside : false),
-    publicEvent: publicEvent === 'true' || publicEvent === true || (publicEvent === undefined ? existingEvent.publicEvent : false),
-    petFriendly: petFriendly === 'true' || petFriendly === true || (petFriendly === undefined ? existingEvent.petFriendly : false),
-    photo: req.file ? `/uploads/${req.file.filename}` : existingEvent.photo,
-    updatedAt: new Date().toISOString()
-  };
-
-  saveEvents(events);
-  res.json(events[eventIndex]);
 });
 
 // Delete event
-app.delete('/api/events/:id', (req, res) => {
-  // Always reload from file to ensure persistence
-  events = loadEvents();
-  const eventIndex = events.findIndex(e => e.id === req.params.id);
-  
-  if (eventIndex === -1) {
-    return res.status(404).json({ error: 'Event not found' });
-  }
+app.delete('/api/events/:id', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState === 1) {
+      // Use MongoDB
+      const event = await Event.findById(req.params.id);
+      if (!event) {
+        return res.status(404).json({ error: 'Event not found' });
+      }
 
-  const event = events[eventIndex];
-  
-  // Delete photo file if it exists
-  if (event.photo) {
-    const photoPath = path.join(__dirname, event.photo);
-    if (fs.existsSync(photoPath)) {
-      fs.unlinkSync(photoPath);
+      // Delete photo file if it exists
+      if (event.photo) {
+        const photoPath = path.join(__dirname, event.photo);
+        if (fs.existsSync(photoPath)) {
+          fs.unlinkSync(photoPath);
+        }
+      }
+
+      await Event.findByIdAndDelete(req.params.id);
+      res.json({ message: 'Event deleted successfully' });
+    } else {
+      // Fallback to file system
+      events = loadEvents();
+      const eventIndex = events.findIndex(e => e.id === req.params.id);
+      
+      if (eventIndex === -1) {
+        return res.status(404).json({ error: 'Event not found' });
+      }
+
+      const event = events[eventIndex];
+      
+      // Delete photo file if it exists
+      if (event.photo) {
+        const photoPath = path.join(__dirname, event.photo);
+        if (fs.existsSync(photoPath)) {
+          fs.unlinkSync(photoPath);
+        }
+      }
+
+      events.splice(eventIndex, 1);
+      saveEvents(events);
+      res.json({ message: 'Event deleted successfully' });
     }
+  } catch (error) {
+    console.error('Error deleting event:', error);
+    res.status(500).json({ error: error.message });
   }
-
-  events.splice(eventIndex, 1);
-  saveEvents(events);
-  res.json({ message: 'Event deleted successfully' });
 });
 
 // Static files (must come after API routes)
