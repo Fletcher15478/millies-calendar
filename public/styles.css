@@ -1728,6 +1728,17 @@ footer {
 
 .admin-controls {
     margin-bottom: 30px;
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.btn-import-csv {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.btn-import-csv:hover {
+    background: linear-gradient(135deg, #5568d3 0%, #653a8f 100%);
 }
 
 .admin-events-container {
@@ -2210,5 +2221,114 @@ footer {
         font-size: 1rem;
         min-height: 140px;
     }
+}
+
+/* CSV Import Styles */
+.csv-instructions {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+}
+
+.csv-instructions p {
+    margin: 0 0 10px 0;
+}
+
+.csv-instructions ul {
+    margin: 10px 0;
+    padding-left: 20px;
+}
+
+.csv-instructions li {
+    margin: 5px 0;
+}
+
+.csv-instructions code {
+    background: #e9ecef;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85em;
+}
+
+.csv-instructions pre {
+    background: #2d2d2d;
+    color: #f8f8f2;
+    padding: 15px;
+    border-radius: 5px;
+    overflow-x: auto;
+    font-size: 0.85em;
+    margin-top: 10px;
+}
+
+.csv-progress {
+    margin: 20px 0;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 30px;
+    background: #e9ecef;
+    border-radius: 15px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    width: 0%;
+    transition: width 0.3s ease;
+    border-radius: 15px;
+}
+
+#progress-text {
+    text-align: center;
+    margin: 0;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.csv-results {
+    margin-top: 20px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.csv-results-summary {
+    margin-bottom: 15px;
+}
+
+.csv-results-summary h3 {
+    margin-top: 0;
+    color: var(--primary-color);
+}
+
+.csv-results-summary p {
+    margin: 8px 0;
+}
+
+.csv-errors {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 2px solid #dee2e6;
+}
+
+.csv-errors h4 {
+    color: var(--accent-color);
+    margin-bottom: 10px;
+}
+
+.csv-errors ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.csv-errors li {
+    margin: 5px 0;
+    color: #dc3545;
 }
 

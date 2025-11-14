@@ -73,6 +73,52 @@
                         <span class="btn-icon">➕</span>
                         <span>Add New Event</span>
                     </button>
+                    <button id="import-csv-btn" class="btn-primary btn-import-csv">
+                        <span class="btn-icon">📥</span>
+                        <span>Import CSV</span>
+                    </button>
+                </div>
+
+                <!-- CSV Import Modal -->
+                <div id="csv-import-modal" class="modal">
+                    <div class="modal-content">
+                        <span class="close csv-close">&times;</span>
+                        <h2>Import Events from CSV</h2>
+                        <div class="csv-instructions">
+                            <p><strong>CSV Format:</strong> Your CSV file should have the following columns:</p>
+                            <ul>
+                                <li><code>title</code> (required) - Event title</li>
+                                <li><code>date</code> (required) - Date in YYYY-MM-DD format (e.g., 2024-11-20)</li>
+                                <li><code>time</code> (required) - Time in HH:MM format (24-hour, e.g., 14:30)</li>
+                                <li><code>description</code> (required) - Event description</li>
+                                <li><code>location</code> (optional) - Event location</li>
+                                <li><code>featured</code> (optional) - true/false</li>
+                                <li><code>outside</code> (optional) - true/false</li>
+                                <li><code>publicEvent</code> (optional) - true/false</li>
+                                <li><code>petFriendly</code> (optional) - true/false</li>
+                            </ul>
+                            <p><strong>Example:</strong></p>
+                            <pre>title,date,time,description,location,featured,outside,publicEvent,petFriendly
+Ice Cream Social,2024-11-20,14:00,Join us for ice cream!,123 Main St,true,false,true,false</pre>
+                        </div>
+                        <form id="csv-import-form">
+                            <div class="form-group">
+                                <label for="csv-file">Select CSV File *</label>
+                                <input type="file" id="csv-file" accept=".csv" required>
+                            </div>
+                            <div id="csv-import-progress" class="csv-progress" style="display: none;">
+                                <div class="progress-bar">
+                                    <div id="progress-fill" class="progress-fill"></div>
+                                </div>
+                                <p id="progress-text">Processing...</p>
+                            </div>
+                            <div id="csv-import-results" class="csv-results" style="display: none;"></div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn-primary">Import Events</button>
+                                <button type="button" class="btn-secondary" id="cancel-csv-btn">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
 
                 <!-- Event Form Modal -->

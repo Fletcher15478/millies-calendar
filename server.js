@@ -234,16 +234,23 @@ app.post('/api/events', upload.single('photo'), async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
+    // Helper function to convert string/boolean to boolean
+    const toBoolean = (value) => {
+      if (typeof value === 'boolean') return value;
+      if (typeof value === 'string') return value === 'true' || value.toLowerCase() === 'true';
+      return false;
+    };
+
     const eventData = {
       title,
       date,
       description,
       time,
       location: (location && typeof location === 'string' && location.trim()) ? location.trim() : null,
-      featured: featured === 'true' || featured === true,
-      outside: outside === 'true' || outside === true,
-      publicEvent: publicEvent === 'true' || publicEvent === true,
-      petFriendly: petFriendly === 'true' || petFriendly === true,
+      featured: toBoolean(featured),
+      outside: toBoolean(outside),
+      publicEvent: toBoolean(publicEvent),
+      petFriendly: toBoolean(petFriendly),
       photo: req.file ? `/uploads/${req.file.filename}` : null
     };
 

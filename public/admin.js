@@ -18,6 +18,16 @@ const cancelBtn = document.getElementById('cancel-btn');
 const adminEventsContainer = document.getElementById('admin-events-container');
 const photoInput = document.getElementById('event-photo');
 const photoPreview = document.getElementById('photo-preview');
+const importCsvBtn = document.getElementById('import-csv-btn');
+const csvImportModal = document.getElementById('csv-import-modal');
+const csvImportForm = document.getElementById('csv-import-form');
+const csvFileInput = document.getElementById('csv-file');
+const csvCloseBtn = document.querySelector('.csv-close');
+const cancelCsvBtn = document.getElementById('cancel-csv-btn');
+const csvImportProgress = document.getElementById('csv-import-progress');
+const progressFill = document.getElementById('progress-fill');
+const progressText = document.getElementById('progress-text');
+const csvImportResults = document.getElementById('csv-import-results');
 
 // Check if user is already logged in
 function checkAuth() {
@@ -67,16 +77,32 @@ function setupAdminEventListeners() {
     if (addEventBtn) {
         addEventBtn.addEventListener('click', () => openModal());
     }
+    if (importCsvBtn) {
+        importCsvBtn.addEventListener('click', () => openCsvModal());
+    }
     if (closeModal) {
         closeModal.addEventListener('click', () => closeModalWindow());
     }
+    if (csvCloseBtn) {
+        csvCloseBtn.addEventListener('click', () => closeCsvModal());
+    }
     if (cancelBtn) {
         cancelBtn.addEventListener('click', () => closeModalWindow());
+    }
+    if (cancelCsvBtn) {
+        cancelCsvBtn.addEventListener('click', () => closeCsvModal());
     }
     if (eventModal) {
         window.addEventListener('click', (e) => {
             if (e.target === eventModal) {
                 closeModalWindow();
+            }
+        });
+    }
+    if (csvImportModal) {
+        window.addEventListener('click', (e) => {
+            if (e.target === csvImportModal) {
+                closeCsvModal();
             }
         });
     }
@@ -94,6 +120,9 @@ function setupAdminEventListeners() {
     }
     if (eventForm) {
         eventForm.addEventListener('submit', handleFormSubmit);
+    }
+    if (csvImportForm) {
+        csvImportForm.addEventListener('submit', handleCsvImport);
     }
 }
 
@@ -384,6 +413,249 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+// CSV Import Functions
+function openCsvModal() {
+    csvImportModal.style.display = 'block';
+    csvImportForm.reset();
+    csvImportProgress.style.display = 'none';
+    csvImportResults.style.display = 'none';
+}
+
+function closeCsvModal() {
+    csvImportModal.style.display = 'none';
+    csvImportForm.reset();
+    csvImportProgress.style.display = 'none';
+    csvImportResults.style.display = 'none';
+}
+
+function parseCSV(text) {
+    const lines = text.split('\n').filter(line => line.trim());
+    if (lines.length < 2) {
+        throw new Error('CSV file must have at least a header row and one data row');
+    }
+    
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+    const requiredHeaders = ['title', 'date', 'time', 'description'];
+    
+    // Check for required headers
+    for (const required of requiredHeaders) {
+        if (!headers.includes(required)) {
+            throw new Error(`Missing required column: ${required}`);
+        }
+    }
+    
+    const events = [];
+    for (let i = 1; i < lines.length; i++) {
+        const values = [];
+        let currentValue = '';
+        let inQuotes = false;
+        
+        // Parse CSV line handling quoted values
+        for (let j = 0; j < lines[i].length; j++) {
+            const char = lines[i][j];
+            if (char === '"') {
+                inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+                values.push(currentValue.trim());
+                currentValue = '';
+            } else {
+                currentValue += char;
+            }
+        }
+        values.push(currentValue.trim());
+        
+        if (values.length !== headers.length) {
+            console.warn(`Row ${i + 1} has ${values.length} columns but expected ${headers.length}, skipping`);
+            continue;
+        }
+        
+        const event = {};
+        headers.forEach((header, index) => {
+            event[header] = values[index] || '';
+        });
+        
+        events.push(event);
+    }
+    
+    return events;
+}
+
+function validateEventData(event, rowNumber) {
+    const errors = [];
+    
+    if (!event.title || !event.title.trim()) {
+        errors.push('Title is required');
+    }
+    
+    if (!event.date || !event.date.trim()) {
+        errors.push('Date is required');
+    } else {
+        // Validate date format YYYY-MM-DD
+        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+        if (!dateRegex.test(event.date)) {
+            errors.push('Date must be in YYYY-MM-DD format');
+        } else {
+            const date = new Date(event.date);
+            if (isNaN(date.getTime())) {
+                errors.push('Invalid date');
+            }
+        }
+    }
+    
+    if (!event.time || !event.time.trim()) {
+        errors.push('Time is required');
+    } else {
+        // Validate time format HH:MM
+        const timeRegex = /^\d{2}:\d{2}$/;
+        if (!timeRegex.test(event.time)) {
+            errors.push('Time must be in HH:MM format (24-hour)');
+        }
+    }
+    
+    if (!event.description || !event.description.trim()) {
+        errors.push('Description is required');
+    }
+    
+    return {
+        valid: errors.length === 0,
+        errors: errors,
+        rowNumber: rowNumber
+    };
+}
+
+async function handleCsvImport(e) {
+    e.preventDefault();
+    
+    const file = csvFileInput.files[0];
+    if (!file) {
+        alert('Please select a CSV file');
+        return;
+    }
+    
+    try {
+        // Read CSV file
+        const text = await file.text();
+        
+        // Parse CSV
+        const events = parseCSV(text);
+        
+        if (events.length === 0) {
+            alert('No events found in CSV file');
+            return;
+        }
+        
+        // Validate all events
+        const validationResults = events.map((event, index) => validateEventData(event, index + 2)); // +2 because row 1 is header
+        const invalidEvents = validationResults.filter(r => !r.valid);
+        
+        if (invalidEvents.length > 0) {
+            const errorMessages = invalidEvents.map(r => 
+                `Row ${r.rowNumber}: ${r.errors.join(', ')}`
+            ).join('\n');
+            alert(`Please fix the following errors:\n\n${errorMessages}`);
+            return;
+        }
+        
+        // Show progress
+        csvImportProgress.style.display = 'block';
+        csvImportResults.style.display = 'none';
+        progressFill.style.width = '0%';
+        progressText.textContent = `Importing ${events.length} events...`;
+        
+        // Import events
+        let successCount = 0;
+        let errorCount = 0;
+        const errors = [];
+        
+        for (let i = 0; i < events.length; i++) {
+            const event = events[i];
+            const progress = ((i + 1) / events.length) * 100;
+            progressFill.style.width = `${progress}%`;
+            progressText.textContent = `Importing event ${i + 1} of ${events.length}...`;
+            
+            try {
+                // Handle both camelCase and lowercase column names
+                const getValue = (obj, ...keys) => {
+                    for (const key of keys) {
+                        if (obj[key] !== undefined && obj[key] !== '') {
+                            return obj[key];
+                        }
+                    }
+                    return '';
+                };
+                
+                const eventData = {
+                    title: event.title.trim(),
+                    date: event.date.trim(),
+                    time: event.time.trim(),
+                    description: event.description.trim(),
+                    location: getValue(event, 'location') ? getValue(event, 'location').trim() : '',
+                    featured: getValue(event, 'featured') === 'true' || getValue(event, 'featured') === true,
+                    outside: getValue(event, 'outside') === 'true' || getValue(event, 'outside') === true,
+                    publicEvent: getValue(event, 'publicevent', 'publicEvent') === 'true' || getValue(event, 'publicevent', 'publicEvent') === true,
+                    petFriendly: getValue(event, 'petfriendly', 'petFriendly') === 'true' || getValue(event, 'petfriendly', 'petFriendly') === true
+                };
+                
+                const response = await fetch(`${API_BASE_URL}/api/events`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(eventData)
+                });
+                
+                if (response.ok) {
+                    successCount++;
+                } else {
+                    const error = await response.json();
+                    errorCount++;
+                    errors.push(`Row ${i + 2}: ${error.error || 'Failed to import'}`);
+                }
+            } catch (error) {
+                errorCount++;
+                errors.push(`Row ${i + 2}: ${error.message}`);
+            }
+        }
+        
+        // Show results
+        progressFill.style.width = '100%';
+        progressText.textContent = 'Import complete!';
+        
+        let resultsHtml = `
+            <div class="csv-results-summary">
+                <h3>Import Results</h3>
+                <p><strong>Successfully imported:</strong> ${successCount} events</p>
+                <p><strong>Failed:</strong> ${errorCount} events</p>
+            </div>
+        `;
+        
+        if (errors.length > 0) {
+            resultsHtml += `
+                <div class="csv-errors">
+                    <h4>Errors:</h4>
+                    <ul>
+                        ${errors.map(e => `<li>${escapeHtml(e)}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+        
+        csvImportResults.innerHTML = resultsHtml;
+        csvImportResults.style.display = 'block';
+        
+        // Reload events if any were successful
+        if (successCount > 0) {
+            setTimeout(() => {
+                loadEvents();
+            }, 1000);
+        }
+        
+    } catch (error) {
+        alert('Error processing CSV file: ' + error.message);
+        csvImportProgress.style.display = 'none';
+    }
 }
 
 // Initialize - check authentication on page load
