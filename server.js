@@ -6,26 +6,22 @@ const path = require('path');
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const mongoose = require('mongoose');
-const Event = require('./models/Event');
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// MongoDB connection
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/millies-calendar';
+// Supabase connection
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_KEY;
+let supabase = null;
 
-mongoose.connect(MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => {
-  console.log('Connected to MongoDB');
-})
-.catch((error) => {
-  console.error('MongoDB connection error:', error);
-  console.log('Falling back to file-based storage if MongoDB URI not set');
-});
+if (SUPABASE_URL && SUPABASE_KEY) {
+  supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+  console.log('Connected to Supabase');
+} else {
+  console.log('Supabase credentials not set, falling back to file-based storage');
+}
 
 // Middleware
 app.use(cors());
@@ -158,20 +154,26 @@ app.post('/api/admin/login', async (req, res) => {
 // Get all events (public) - featured events first, then by date
 app.get('/api/events', async (req, res) => {
   try {
-    if (mongoose.connection.readyState === 1) {
-      // Use MongoDB
-      const events = await Event.find({}).lean();
-      const sorted = events.sort((a, b) => {
-        // Featured events first
+    if (supabase) {
+      // Use Supabase
+      const { data, error } = await supabase
+        .from('events')
+        .select('*')
+        .order('date', { ascending: true });
+      
+      if (error) throw error;
+      
+      // Sort: featured first, then by date
+      const sorted = data.sort((a, b) => {
         if (a.featured && !b.featured) return -1;
         if (!a.featured && b.featured) return 1;
-        // Then by date
         return new Date(a.date) - new Date(b.date);
       });
-      // Convert _id to id for compatibility
+      
+      // Convert id field for compatibility
       const formatted = sorted.map(e => ({
         ...e,
-        id: e._id.toString()
+        id: e.id.toString()
       }));
       res.json(formatted);
     } else {
@@ -193,13 +195,19 @@ app.get('/api/events', async (req, res) => {
 // Get single event
 app.get('/api/events/:id', async (req, res) => {
   try {
-    if (mongoose.connection.readyState === 1) {
-      // Use MongoDB
-      const event = await Event.findById(req.params.id).lean();
-      if (!event) {
+    if (supabase) {
+      // Use Supabase
+      const { data, error } = await supabase
+        .from('events')
+        .select('*')
+        .eq('id', req.params.id)
+        .single();
+      
+      if (error) throw error;
+      if (!data) {
         return res.status(404).json({ error: 'Event not found' });
       }
-      res.json({ ...event, id: event._id.toString() });
+      res.json({ ...data, id: data.id.toString() });
     } else {
       // Fallback to file system
       events = loadEvents();
@@ -239,15 +247,20 @@ app.post('/api/events', upload.single('photo'), async (req, res) => {
       photo: req.file ? `/uploads/${req.file.filename}` : null
     };
 
-    if (mongoose.connection.readyState === 1) {
-      // Use MongoDB
-      const event = new Event(eventData);
-      const savedEvent = await event.save();
-      console.log('Event saved to MongoDB:', savedEvent._id);
+    if (supabase) {
+      // Use Supabase
+      const { data, error } = await supabase
+        .from('events')
+        .insert([eventData])
+        .select()
+        .single();
+      
+      if (error) throw error;
+      console.log('Event saved to Supabase:', data.id);
       if (req.file) {
         console.log('Image saved to:', req.file.path);
       }
-      res.status(201).json({ ...savedEvent.toObject(), id: savedEvent._id.toString() });
+      res.status(201).json({ ...data, id: data.id.toString() });
     } else {
       // Fallback to file system
       events = loadEvents();
@@ -275,28 +288,34 @@ app.put('/api/events/:id', upload.single('photo'), async (req, res) => {
   try {
     const { title, date, description, time, featured, location, outside, publicEvent, petFriendly } = req.body;
 
-    if (mongoose.connection.readyState === 1) {
-      // Use MongoDB
-      const event = await Event.findById(req.params.id);
-      if (!event) {
+    if (supabase) {
+      // Use Supabase
+      const updateData = {};
+      if (title !== undefined) updateData.title = title;
+      if (date !== undefined) updateData.date = date;
+      if (description !== undefined) updateData.description = description;
+      if (time !== undefined) updateData.time = time;
+      if (location !== undefined) {
+        updateData.location = (location && typeof location === 'string' && location.trim()) ? location.trim() : null;
+      }
+      if (featured !== undefined) updateData.featured = featured === 'true' || featured === true;
+      if (outside !== undefined) updateData.outside = outside === 'true' || outside === true;
+      if (publicEvent !== undefined) updateData.publicEvent = publicEvent === 'true' || publicEvent === true;
+      if (petFriendly !== undefined) updateData.petFriendly = petFriendly === 'true' || petFriendly === true;
+      if (req.file) updateData.photo = `/uploads/${req.file.filename}`;
+
+      const { data, error } = await supabase
+        .from('events')
+        .update(updateData)
+        .eq('id', req.params.id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      if (!data) {
         return res.status(404).json({ error: 'Event not found' });
       }
-
-      if (title !== undefined) event.title = title;
-      if (date !== undefined) event.date = date;
-      if (description !== undefined) event.description = description;
-      if (time !== undefined) event.time = time;
-      if (location !== undefined) {
-        event.location = (location && typeof location === 'string' && location.trim()) ? location.trim() : null;
-      }
-      if (featured !== undefined) event.featured = featured === 'true' || featured === true;
-      if (outside !== undefined) event.outside = outside === 'true' || outside === true;
-      if (publicEvent !== undefined) event.publicEvent = publicEvent === 'true' || publicEvent === true;
-      if (petFriendly !== undefined) event.petFriendly = petFriendly === 'true' || petFriendly === true;
-      if (req.file) event.photo = `/uploads/${req.file.filename}`;
-
-      const updatedEvent = await event.save();
-      res.json({ ...updatedEvent.toObject(), id: updatedEvent._id.toString() });
+      res.json({ ...data, id: data.id.toString() });
     } else {
       // Fallback to file system
       events = loadEvents();
@@ -339,10 +358,16 @@ app.put('/api/events/:id', upload.single('photo'), async (req, res) => {
 // Delete event
 app.delete('/api/events/:id', async (req, res) => {
   try {
-    if (mongoose.connection.readyState === 1) {
-      // Use MongoDB
-      const event = await Event.findById(req.params.id);
-      if (!event) {
+    if (supabase) {
+      // Use Supabase
+      // First get the event to check for photo
+      const { data: event, error: fetchError } = await supabase
+        .from('events')
+        .select('photo')
+        .eq('id', req.params.id)
+        .single();
+      
+      if (fetchError || !event) {
         return res.status(404).json({ error: 'Event not found' });
       }
 
@@ -354,7 +379,12 @@ app.delete('/api/events/:id', async (req, res) => {
         }
       }
 
-      await Event.findByIdAndDelete(req.params.id);
+      const { error } = await supabase
+        .from('events')
+        .delete()
+        .eq('id', req.params.id);
+      
+      if (error) throw error;
       res.json({ message: 'Event deleted successfully' });
     } else {
       // Fallback to file system
