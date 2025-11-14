@@ -53,7 +53,9 @@ function displayMonthEvents() {
         
         // Filter events to only show selected month
         const monthEvents = allEvents.filter(event => {
-            const eventDate = new Date(event.date);
+            // Parse date string (YYYY-MM-DD) without timezone conversion
+            const [year, month, day] = event.date.split('-').map(Number);
+            const eventDate = new Date(year, month - 1, day);
             return eventDate.getFullYear() === displayYear && 
                    eventDate.getMonth() === displayMonth;
         });
@@ -90,7 +92,9 @@ function displayMonthEvents() {
 }
 
 function createEventTile(event) {
-    const date = new Date(event.date);
+    // Parse date string (YYYY-MM-DD) without timezone conversion
+    const [year, month, day] = event.date.split('-').map(Number);
+    const date = new Date(year, month - 1, day); // month is 0-indexed
     const formattedDate = date.toLocaleDateString('en-US', {
         month: 'long',
         day: 'numeric',
@@ -135,7 +139,10 @@ function createEventTile(event) {
     // Create calendar link
     let calendarUrl;
     try {
-        const eventDateTime = new Date(event.date + 'T' + event.time);
+        // Parse date and time without timezone conversion
+        const [year, month, day] = event.date.split('-').map(Number);
+        const [hours, minutes] = event.time.split(':').map(Number);
+        const eventDateTime = new Date(year, month - 1, day, hours, minutes);
         const eventDateISO = eventDateTime.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
         const endDate = new Date(eventDateTime.getTime() + 60 * 60 * 1000); // 1 hour default
         const endDateISO = endDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';

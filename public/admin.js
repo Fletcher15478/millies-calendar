@@ -310,7 +310,9 @@ async function loadEvents() {
 }
 
 function createEventCard(event) {
-    const date = new Date(event.date);
+    // Parse date string (YYYY-MM-DD) without timezone conversion
+    const [year, month, day] = event.date.split('-').map(Number);
+    const date = new Date(year, month - 1, day); // month is 0-indexed
     const formattedDate = date.toLocaleDateString('en-US', { 
         year: 'numeric', 
         month: 'long', 
