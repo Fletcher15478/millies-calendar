@@ -21,6 +21,15 @@ This app uses Supabase (free PostgreSQL database) for persistent event storage. 
 4. Wait 2-3 minutes for project to be ready
 
 ### Step 3: Create Events Table
+
+**Option A: Using SQL (Recommended - Fastest)**
+1. In your Supabase dashboard, go to "SQL Editor"
+2. Click "New Query"
+3. Copy and paste the SQL from `create_events_table.sql` file
+4. Click "Run" (or press Cmd/Ctrl + Enter)
+5. Done! Table is created with all columns and indexes
+
+**Option B: Using Table Editor (Manual)**
 1. In your Supabase dashboard, go to "Table Editor"
 2. Click "New Table"
 3. Name it: `events`
