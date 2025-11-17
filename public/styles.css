@@ -289,24 +289,30 @@ body.admin-page,
     padding: 0;
     margin-top: 0;
     box-shadow: none;
+    left: 0;
+    right: 0;
+    position: relative;
 }
 
 .hero-container {
     width: 100%;
     position: relative;
-    overflow: visible;
+    overflow: hidden;
     display: flex;
     justify-content: center;
     align-items: center;
     margin: 0;
     padding: 0;
+    left: 0;
+    right: 0;
 }
 
 .calendar-header-image {
     width: 100%;
     height: auto;
     display: block;
-    object-fit: contain;
+    object-fit: cover;
+    object-position: center;
     max-width: 100%;
     max-height: 85vh;
     margin: 0;
@@ -322,7 +328,8 @@ body.landing-page .calendar-header-image {
     width: 100%;
     height: auto;
     display: block;
-    object-fit: contain;
+    object-fit: cover;
+    object-position: center;
     max-width: 100%;
     max-height: 85vh;
     margin: 0;
@@ -1955,14 +1962,16 @@ footer {
     .calendar-header-image {
         width: 100%;
         height: auto;
-        object-fit: contain;
+        object-fit: cover;
+        object-position: center;
         margin-top: 0;
         margin-bottom: -10px;
         max-height: 75vh;
     }
     
     body.landing-page .calendar-header-image {
-        object-fit: contain;
+        object-fit: cover;
+        object-position: center;
         margin-top: 0;
         margin-bottom: -10px;
         max-height: 75vh;
