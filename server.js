@@ -7,9 +7,6 @@ const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { createClient } = require('@supabase/supabase-js');
-const passport = require('passport');
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const session = require('express-session');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -26,76 +23,11 @@ if (SUPABASE_URL && SUPABASE_KEY) {
   console.log('Supabase credentials not set, falling back to file-based storage');
 }
 
-// Allowed admin emails (add your three user emails here)
-const ALLOWED_ADMIN_EMAILS = process.env.ALLOWED_ADMIN_EMAILS 
-  ? process.env.ALLOWED_ADMIN_EMAILS.split(',')
-  : ['support@millieshomemade.com']; // Default, add your three emails
-
-// Google OAuth configuration
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-const GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || `${process.env.BASE_URL || 'http://localhost:3000'}/api/auth/google/callback`;
-
-// JWT Secret (needed for session)
+// JWT Secret
 const JWT_SECRET = process.env.JWT_SECRET || 'millies-secret-key-change-in-production';
 
-// Session configuration
-app.use(session({
-  secret: process.env.SESSION_SECRET || JWT_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  cookie: { 
-    secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-    httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
-  }
-}));
-
-// Initialize Passport
-app.use(passport.initialize());
-app.use(passport.session());
-
-// Configure Google OAuth Strategy
-if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET) {
-  passport.use(new GoogleStrategy({
-    clientID: GOOGLE_CLIENT_ID,
-    clientSecret: GOOGLE_CLIENT_SECRET,
-    callbackURL: GOOGLE_CALLBACK_URL
-  },
-  async (accessToken, refreshToken, profile, done) => {
-    const email = profile.emails && profile.emails[0] ? profile.emails[0].value : null;
-    
-    // Check if email is in allowed list
-    if (email && ALLOWED_ADMIN_EMAILS.includes(email.toLowerCase())) {
-      return done(null, {
-        id: profile.id,
-        email: email,
-        name: profile.displayName,
-        photo: profile.photos && profile.photos[0] ? profile.photos[0].value : null
-      });
-    } else {
-      return done(null, false, { message: 'Email not authorized' });
-    }
-  }));
-
-  passport.serializeUser((user, done) => {
-    done(null, user);
-  });
-
-  passport.deserializeUser((user, done) => {
-    done(null, user);
-  });
-  
-  console.log('Google OAuth configured');
-} else {
-  console.log('Google OAuth credentials not set. Google sign-in will be disabled.');
-}
-
 // Middleware
-app.use(cors({
-  origin: true,
-  credentials: true // Allow cookies
-}));
+app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -171,11 +103,19 @@ function saveEvents(eventsArray) {
 // Initialize events from file
 let events = loadEvents();
 
-// Admin credentials (in production, store in database with hashed passwords)
-// Default: username: support@millieshomemade.com, password: Password1
-// Change these in production!
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'support@millieshomemade.com';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Password1';
+// Admin users - simple email/password pairs
+// Format: "email1:password1,email2:password2,email3:password3"
+// Or set individual env vars: ADMIN_USER1_EMAIL, ADMIN_USER1_PASSWORD, etc.
+const ADMIN_USERS = process.env.ADMIN_USERS 
+  ? process.env.ADMIN_USERS.split(',').map(user => {
+      const [email, password] = user.split(':');
+      return { email: email.trim(), password: password.trim() };
+    })
+  : [
+      { email: process.env.ADMIN_USER1_EMAIL || 'support@millieshomemade.com', password: process.env.ADMIN_USER1_PASSWORD || 'Password1' },
+      { email: process.env.ADMIN_USER2_EMAIL || '', password: process.env.ADMIN_USER2_PASSWORD || '' },
+      { email: process.env.ADMIN_USER3_EMAIL || '', password: process.env.ADMIN_USER3_PASSWORD || '' }
+    ].filter(user => user.email && user.password); // Remove empty entries
 
 // Simple authentication middleware
 function authenticateToken(req, res, next) {
@@ -197,74 +137,30 @@ function authenticateToken(req, res, next) {
 
 // API Routes (must come before static files)
 
-// Google OAuth Routes
-if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET) {
-  // Initiate Google OAuth
-  app.get('/api/auth/google',
-    passport.authenticate('google', { scope: ['profile', 'email'] })
-  );
-
-  // Google OAuth callback
-  app.get('/api/auth/google/callback',
-    passport.authenticate('google', { failureRedirect: '/admin.html?error=unauthorized' }),
-    (req, res) => {
-      // Successful authentication, redirect to admin page
-      res.redirect('/admin.html?googleAuth=success');
-    }
-  );
-
-  // Check Google auth status
-  app.get('/api/auth/status', (req, res) => {
-    if (req.user) {
-      res.json({ 
-        authenticated: true, 
-        user: {
-          email: req.user.email,
-          name: req.user.name,
-          photo: req.user.photo
-        }
-      });
-    } else {
-      res.json({ authenticated: false });
-    }
-  });
-
-  // Logout
-  app.post('/api/auth/logout', (req, res) => {
-    req.logout((err) => {
-      if (err) {
-        return res.status(500).json({ error: 'Logout failed' });
-      }
-      req.session.destroy((err) => {
-        if (err) {
-          return res.status(500).json({ error: 'Session destruction failed' });
-        }
-        res.clearCookie('connect.sid');
-        res.json({ message: 'Logged out successfully' });
-      });
-    });
-  });
-}
-
-// Admin login
+// Admin login - check against all allowed users
 app.post('/api/admin/login', async (req, res) => {
   try {
     const { username, password } = req.body;
 
     if (!username || !password) {
-      return res.status(400).json({ error: 'Username and password required' });
+      return res.status(400).json({ error: 'Email and password required' });
     }
 
-    // Simple authentication (in production, use database and bcrypt)
-    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+    // Check if user exists in allowed list
+    const user = ADMIN_USERS.find(u => 
+      u.email.toLowerCase() === username.toLowerCase().trim() && 
+      u.password === password
+    );
+
+    if (user) {
       const token = jwt.sign(
-        { username: username, admin: true },
+        { email: user.email, admin: true },
         JWT_SECRET,
         { expiresIn: '24h' }
       );
-      res.json({ token, message: 'Login successful' });
+      res.json({ token, message: 'Login successful', email: user.email });
     } else {
-      res.status(401).json({ error: 'Invalid credentials' });
+      res.status(401).json({ error: 'Invalid email or password' });
     }
   } catch (error) {
     res.status(500).json({ error: error.message });

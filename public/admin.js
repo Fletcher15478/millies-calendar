@@ -1,8 +1,6 @@
 const API_BASE_URL = window.location.origin;
 
-// Login credentials
-const ADMIN_USERNAME = 'support@millieshomemade.com';
-const ADMIN_PASSWORD = 'Admin123';
+// Login is now handled server-side - no hardcoded credentials
 
 // DOM Elements
 const loginSection = document.getElementById('login-section');
@@ -30,48 +28,12 @@ const progressText = document.getElementById('progress-text');
 const csvImportResults = document.getElementById('csv-import-results');
 
 // Check if user is already logged in
-async function checkAuth() {
-    // Check for Google auth first
-    try {
-        const response = await fetch('/api/auth/status', {
-            credentials: 'include' // Include cookies
-        });
-        if (response.ok) {
-            const data = await response.json();
-            if (data.authenticated) {
-                sessionStorage.setItem('adminAuthenticated', 'true');
-                sessionStorage.setItem('authMethod', 'google');
-                if (data.user) {
-                    sessionStorage.setItem('userEmail', data.user.email);
-                    sessionStorage.setItem('userName', data.user.name || '');
-                }
-                showAdminPanel();
-                return;
-            }
-        }
-    } catch (error) {
-        console.log('Google auth not available or error:', error);
-    }
-    
-    // Fall back to regular auth
+function checkAuth() {
     const isAuthenticated = sessionStorage.getItem('adminAuthenticated') === 'true';
     if (isAuthenticated) {
         showAdminPanel();
     } else {
         showLoginForm();
-    }
-    
-    // Check for Google auth callback
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('googleAuth') === 'success') {
-        // Clear the URL parameter
-        window.history.replaceState({}, document.title, window.location.pathname);
-        // Refresh auth status
-        checkAuth();
-    } else if (urlParams.get('error') === 'unauthorized') {
-        loginError.textContent = 'Your email is not authorized to access the admin panel.';
-        loginError.style.display = 'block';
-        window.history.replaceState({}, document.title, window.location.pathname);
     }
 }
 
@@ -83,17 +45,33 @@ function showLoginForm() {
 
 // Handle login
 if (loginForm) {
-    loginForm.addEventListener('submit', (e) => {
+    loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const username = document.getElementById('login-username').value.trim();
         const password = document.getElementById('login-password').value;
 
-        if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-            sessionStorage.setItem('adminAuthenticated', 'true');
-            loginError.style.display = 'none';
-            showAdminPanel();
-        } else {
-            loginError.textContent = 'Invalid username or password';
+        try {
+            const response = await fetch('/api/admin/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                sessionStorage.setItem('adminAuthenticated', 'true');
+                sessionStorage.setItem('userEmail', data.email || username);
+                loginError.style.display = 'none';
+                showAdminPanel();
+            } else {
+                loginError.textContent = data.error || 'Invalid email or password';
+                loginError.style.display = 'block';
+            }
+        } catch (error) {
+            loginError.textContent = 'Login failed. Please try again.';
             loginError.style.display = 'block';
         }
     });
@@ -101,27 +79,9 @@ if (loginForm) {
 
 // Handle logout
 if (logoutBtn) {
-    logoutBtn.addEventListener('click', async () => {
-        const authMethod = sessionStorage.getItem('authMethod');
-        
-        if (authMethod === 'google') {
-            // Logout from Google auth
-            try {
-                await fetch('/api/auth/logout', {
-                    method: 'POST',
-                    credentials: 'include'
-                });
-            } catch (error) {
-                console.error('Logout error:', error);
-            }
-        }
-        
-        // Clear all session storage
+    logoutBtn.addEventListener('click', () => {
         sessionStorage.removeItem('adminAuthenticated');
-        sessionStorage.removeItem('authMethod');
         sessionStorage.removeItem('userEmail');
-        sessionStorage.removeItem('userName');
-        
         showLoginForm();
         document.getElementById('login-form').reset();
     });
