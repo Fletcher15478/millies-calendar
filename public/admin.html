@@ -25,8 +25,12 @@
                             <label for="login-password">Password</label>
                             <input type="password" id="login-password" required autocomplete="current-password">
                         </div>
+                        <div class="form-group" id="confirm-password-group" style="display: none;">
+                            <label for="confirm-password">Confirm Password</label>
+                            <input type="password" id="confirm-password" autocomplete="new-password">
+                        </div>
                         <div id="login-error" class="error-message" style="display: none;"></div>
-                        <button type="submit" class="btn-primary">Login</button>
+                        <button type="submit" class="btn-primary" id="login-submit-btn">Login</button>
                     </form>
                 </div>
             </div>
@@ -42,7 +46,7 @@
                 </header>
                 <div class="admin-welcome">
                     <div class="welcome-icon">👋</div>
-                    <h2 class="welcome-title">Welcome, Fletcher!</h2>
+                    <h2 class="welcome-title" id="welcome-name">Welcome!</h2>
                     <p class="welcome-subtitle">Manage your events with ease</p>
                 </div>
                 

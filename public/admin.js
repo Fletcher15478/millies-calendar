@@ -1,7 +1,5 @@
 const API_BASE_URL = window.location.origin;
 
-// Login is now handled server-side - no hardcoded credentials
-
 // DOM Elements
 const loginSection = document.getElementById('login-section');
 const loginForm = document.getElementById('login-form');
@@ -26,52 +24,143 @@ const csvImportProgress = document.getElementById('csv-import-progress');
 const progressFill = document.getElementById('progress-fill');
 const progressText = document.getElementById('progress-text');
 const csvImportResults = document.getElementById('csv-import-results');
+const confirmPasswordGroup = document.getElementById('confirm-password-group');
+const confirmPasswordInput = document.getElementById('confirm-password');
+const loginSubmitBtn = document.getElementById('login-submit-btn');
+
+let isSignupMode = false;
 
 // Check if user is already logged in
-function checkAuth() {
-    const isAuthenticated = sessionStorage.getItem('adminAuthenticated') === 'true';
-    if (isAuthenticated) {
-        showAdminPanel();
-    } else {
-        showLoginForm();
+async function checkAuth() {
+    const token = sessionStorage.getItem('authToken');
+    if (token) {
+        // Verify token is still valid
+        try {
+            const response = await fetch('/api/admin/user', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            if (response.ok) {
+                const userData = await response.json();
+                sessionStorage.setItem('userEmail', userData.email);
+                sessionStorage.setItem('userName', userData.name);
+                showAdminPanel();
+                return;
+            }
+        } catch (error) {
+            // Token invalid, clear it
+            sessionStorage.removeItem('authToken');
+        }
     }
+    showLoginForm();
 }
 
 // Show login form
 function showLoginForm() {
     loginSection.style.display = 'block';
     adminPanel.style.display = 'none';
+    isSignupMode = false;
+    confirmPasswordGroup.style.display = 'none';
+    confirmPasswordInput.required = false;
+    loginSubmitBtn.textContent = 'Login';
 }
 
-// Handle login
+// Check if user exists when email is entered
+let emailCheckTimeout;
+const emailInput = document.getElementById('login-username');
+if (emailInput) {
+    emailInput.addEventListener('blur', async () => {
+        const email = emailInput.value.trim().toLowerCase();
+        if (!email) return;
+
+        // Check if email is one of the allowed emails
+        const allowedEmails = ['lauren@millieshomemade.com', 'caroline@millieshomemade.com', 'support@millieshomemade.com'];
+        if (!allowedEmails.includes(email)) {
+            loginError.textContent = 'Email not authorized';
+            loginError.style.display = 'block';
+            return;
+        }
+
+        clearTimeout(emailCheckTimeout);
+        emailCheckTimeout = setTimeout(async () => {
+            try {
+                const response = await fetch('/api/admin/check-user', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    isSignupMode = !data.exists;
+                    if (isSignupMode) {
+                        confirmPasswordGroup.style.display = 'block';
+                        confirmPasswordInput.required = true;
+                        loginSubmitBtn.textContent = 'Create Password';
+                    } else {
+                        confirmPasswordGroup.style.display = 'none';
+                        confirmPasswordInput.required = false;
+                        loginSubmitBtn.textContent = 'Login';
+                    }
+                    loginError.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error checking user:', error);
+            }
+        }, 500);
+    });
+}
+
+// Handle login/signup
 if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const username = document.getElementById('login-username').value.trim();
+        const email = document.getElementById('login-username').value.trim();
         const password = document.getElementById('login-password').value;
+        const confirmPassword = document.getElementById('confirm-password').value;
+
+        // Validate
+        if (isSignupMode) {
+            if (password !== confirmPassword) {
+                loginError.textContent = 'Passwords do not match';
+                loginError.style.display = 'block';
+                return;
+            }
+            if (password.length < 6) {
+                loginError.textContent = 'Password must be at least 6 characters';
+                loginError.style.display = 'block';
+                return;
+            }
+        }
 
         try {
-            const response = await fetch('/api/admin/login', {
+            const endpoint = isSignupMode ? '/api/admin/signup' : '/api/admin/signin';
+            const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ username, password })
+                body: JSON.stringify({ email, password })
             });
 
             const data = await response.json();
 
             if (response.ok) {
+                sessionStorage.setItem('authToken', data.token);
                 sessionStorage.setItem('adminAuthenticated', 'true');
-                sessionStorage.setItem('userEmail', data.email || username);
+                sessionStorage.setItem('userEmail', data.user.email);
+                sessionStorage.setItem('userName', data.user.name);
                 loginError.style.display = 'none';
                 showAdminPanel();
             } else {
-                loginError.textContent = data.error || 'Invalid email or password';
+                loginError.textContent = data.error || 'Authentication failed';
                 loginError.style.display = 'block';
             }
         } catch (error) {
-            loginError.textContent = 'Login failed. Please try again.';
+            loginError.textContent = 'Authentication failed. Please try again.';
             loginError.style.display = 'block';
         }
     });
@@ -81,7 +170,9 @@ if (loginForm) {
 if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
         sessionStorage.removeItem('adminAuthenticated');
+        sessionStorage.removeItem('authToken');
         sessionStorage.removeItem('userEmail');
+        sessionStorage.removeItem('userName');
         showLoginForm();
         document.getElementById('login-form').reset();
     });
@@ -145,6 +236,14 @@ function setupAdminEventListeners() {
 function showAdminPanel() {
     loginSection.style.display = 'none';
     adminPanel.style.display = 'block';
+    
+    // Update welcome message with user's name
+    const userName = sessionStorage.getItem('userName') || 'Admin';
+    const welcomeNameEl = document.getElementById('welcome-name');
+    if (welcomeNameEl) {
+        welcomeNameEl.textContent = `Welcome, ${userName}!`;
+    }
+    
     setupAdminEventListeners();
     if (typeof loadEvents === 'function') {
         loadEvents(); // Load events when panel is shown

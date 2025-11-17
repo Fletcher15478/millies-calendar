@@ -13,8 +13,19 @@ const PORT = process.env.PORT || 3000;
 
 // Supabase connection
 const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_KEY;
+const SUPABASE_KEY = process.env.SUPABASE_KEY; // Service role key for server
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY; // Anon key for client auth
 let supabase = null;
+
+// User email to name mapping
+const USER_NAMES = {
+  'lauren@millieshomemade.com': 'Lauren',
+  'caroline@millieshomemade.com': 'Caroline',
+  'support@millieshomemade.com': 'Fletcher'
+};
+
+// Allowed admin emails
+const ALLOWED_EMAILS = Object.keys(USER_NAMES);
 
 if (SUPABASE_URL && SUPABASE_KEY) {
   supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -103,19 +114,7 @@ function saveEvents(eventsArray) {
 // Initialize events from file
 let events = loadEvents();
 
-// Admin users - simple email/password pairs
-// Format: "email1:password1,email2:password2,email3:password3"
-// Or set individual env vars: ADMIN_USER1_EMAIL, ADMIN_USER1_PASSWORD, etc.
-const ADMIN_USERS = process.env.ADMIN_USERS 
-  ? process.env.ADMIN_USERS.split(',').map(user => {
-      const [email, password] = user.split(':');
-      return { email: email.trim(), password: password.trim() };
-    })
-  : [
-      { email: process.env.ADMIN_USER1_EMAIL || 'support@millieshomemade.com', password: process.env.ADMIN_USER1_PASSWORD || 'Password1' },
-      { email: process.env.ADMIN_USER2_EMAIL || '', password: process.env.ADMIN_USER2_PASSWORD || '' },
-      { email: process.env.ADMIN_USER3_EMAIL || '', password: process.env.ADMIN_USER3_PASSWORD || '' }
-    ].filter(user => user.email && user.password); // Remove empty entries
+// Supabase Auth endpoints
 
 // Simple authentication middleware
 function authenticateToken(req, res, next) {
@@ -137,31 +136,164 @@ function authenticateToken(req, res, next) {
 
 // API Routes (must come before static files)
 
-// Admin login - check against all allowed users
-app.post('/api/admin/login', async (req, res) => {
+// Supabase Auth: Signup (create password)
+app.post('/api/admin/signup', async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
 
-    if (!username || !password) {
+    if (!email || !password) {
       return res.status(400).json({ error: 'Email and password required' });
     }
 
-    // Check if user exists in allowed list
-    const user = ADMIN_USERS.find(u => 
-      u.email.toLowerCase() === username.toLowerCase().trim() && 
-      u.password === password
-    );
-
-    if (user) {
-      const token = jwt.sign(
-        { email: user.email, admin: true },
-        JWT_SECRET,
-        { expiresIn: '24h' }
-      );
-      res.json({ token, message: 'Login successful', email: user.email });
-    } else {
-      res.status(401).json({ error: 'Invalid email or password' });
+    if (!supabase) {
+      return res.status(500).json({ error: 'Supabase not configured' });
     }
+
+    const emailLower = email.toLowerCase().trim();
+    
+    // Check if email is allowed
+    if (!ALLOWED_EMAILS.includes(emailLower)) {
+      return res.status(403).json({ error: 'Email not authorized' });
+    }
+
+    // Check if user already exists
+    const { data: existingUsers } = await supabase.auth.admin.listUsers();
+    const userExists = existingUsers?.users?.some(u => u.email?.toLowerCase() === emailLower);
+
+    if (userExists) {
+      return res.status(400).json({ error: 'User already exists. Please sign in instead.' });
+    }
+
+    // Create user with Supabase Auth
+    const { data, error } = await supabase.auth.admin.createUser({
+      email: emailLower,
+      password: password,
+      email_confirm: true // Auto-confirm email
+    });
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    // Sign in the user
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+      email: emailLower,
+      password: password
+    });
+
+    if (signInError) {
+      return res.status(400).json({ error: signInError.message });
+    }
+
+    res.json({
+      token: signInData.session.access_token,
+      user: {
+        email: signInData.user.email,
+        name: USER_NAMES[emailLower] || 'Admin'
+      },
+      message: 'Account created successfully'
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Supabase Auth: Signin (login)
+app.post('/api/admin/signin', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password required' });
+    }
+
+    if (!supabase) {
+      return res.status(500).json({ error: 'Supabase not configured' });
+    }
+
+    const emailLower = email.toLowerCase().trim();
+    
+    // Check if email is allowed
+    if (!ALLOWED_EMAILS.includes(emailLower)) {
+      return res.status(403).json({ error: 'Email not authorized' });
+    }
+
+    // Sign in with Supabase Auth
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: emailLower,
+      password: password
+    });
+
+    if (error) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    res.json({
+      token: data.session.access_token,
+      user: {
+        email: data.user.email,
+        name: USER_NAMES[emailLower] || 'Admin'
+      },
+      message: 'Login successful'
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Check if user exists
+app.post('/api/admin/check-user', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email || !supabase) {
+      return res.json({ exists: false });
+    }
+
+    const emailLower = email.toLowerCase().trim();
+    
+    // Check if email is allowed
+    if (!ALLOWED_EMAILS.includes(emailLower)) {
+      return res.status(403).json({ error: 'Email not authorized' });
+    }
+
+    // Check if user exists in Supabase Auth
+    const { data: users } = await supabase.auth.admin.listUsers();
+    const userExists = users?.users?.some(u => u.email?.toLowerCase() === emailLower);
+
+    res.json({ exists: userExists || false });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get user info (for welcome message)
+app.get('/api/admin/user', async (req, res) => {
+  try {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token || !supabase) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    // Verify token with Supabase
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+
+    if (error || !user) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    // Check if email is allowed
+    const email = user.email.toLowerCase();
+    if (!ALLOWED_EMAILS.includes(email)) {
+      return res.status(403).json({ error: 'Email not authorized' });
+    }
+
+    res.json({
+      email: user.email,
+      name: USER_NAMES[email] || 'Admin'
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
