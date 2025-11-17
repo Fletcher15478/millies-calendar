@@ -91,6 +91,17 @@ function displayMonthEvents() {
     }
 }
 
+// Helper function to get full image URL (handles both Supabase Storage URLs and local paths)
+function getImageUrl(photoPath) {
+    if (!photoPath) return '';
+    // If it's already a full URL (starts with http:// or https://), use it directly
+    if (photoPath.startsWith('http://') || photoPath.startsWith('https://')) {
+        return photoPath;
+    }
+    // Otherwise, prepend API_BASE_URL for local paths
+    return `${API_BASE_URL}${photoPath}`;
+}
+
 function createEventTile(event) {
     // Parse date string (YYYY-MM-DD) without timezone conversion
     const [year, month, day] = event.date.split('-').map(Number);
@@ -102,7 +113,7 @@ function createEventTile(event) {
     });
 
     const backgroundImage = event.photo
-        ? `background-image: url('${API_BASE_URL}${event.photo}');`
+        ? `background-image: url('${getImageUrl(event.photo)}');`
         : '';
     
     const hasImage = event.photo ? 'has-image' : 'no-image';

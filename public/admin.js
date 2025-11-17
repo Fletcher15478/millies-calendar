@@ -1,5 +1,16 @@
 const API_BASE_URL = window.location.origin;
 
+// Helper function to get full image URL (handles both Supabase Storage URLs and local paths)
+function getImageUrl(photoPath) {
+    if (!photoPath) return '';
+    // If it's already a full URL (starts with http:// or https://), use it directly
+    if (photoPath.startsWith('http://') || photoPath.startsWith('https://')) {
+        return photoPath;
+    }
+    // Otherwise, prepend API_BASE_URL for local paths
+    return `${API_BASE_URL}${photoPath}`;
+}
+
 // DOM Elements
 const loginSection = document.getElementById('login-section');
 const loginForm = document.getElementById('login-form');
@@ -307,7 +318,7 @@ function openModal(event = null) {
         document.getElementById('event-ampm').value = timeParts.ampm;
         
         if (event.photo) {
-            photoPreview.innerHTML = `<img src="${API_BASE_URL}${event.photo}" alt="Current photo">`;
+            photoPreview.innerHTML = `<img src="${getImageUrl(event.photo)}" alt="Current photo">`;
         } else {
             photoPreview.innerHTML = '';
         }
@@ -463,7 +474,7 @@ function createEventCard(event) {
     });
     
     const imageHtml = event.photo 
-        ? `<img src="${API_BASE_URL}${event.photo}" alt="${event.title}" class="event-image">`
+        ? `<img src="${getImageUrl(event.photo)}" alt="${event.title}" class="event-image">`
         : '';
     
     const featuredBadge = event.featured 
