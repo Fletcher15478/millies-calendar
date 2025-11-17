@@ -308,6 +308,7 @@ body.admin-page,
     display: block;
     object-fit: contain;
     max-width: 100%;
+    max-height: 60vh;
     margin: 0;
     padding: 0;
     margin-top: -10px;
@@ -323,6 +324,7 @@ body.landing-page .calendar-header-image {
     display: block;
     object-fit: contain;
     max-width: 100%;
+    max-height: 60vh;
     margin: 0;
     padding: 0;
     margin-top: -10px;
@@ -1956,14 +1958,14 @@ footer {
         object-fit: contain;
         margin-top: 0;
         margin-bottom: -10px;
-        max-height: none;
+        max-height: 50vh;
     }
     
     body.landing-page .calendar-header-image {
         object-fit: contain;
         margin-top: 0;
         margin-bottom: -10px;
-        max-height: none;
+        max-height: 50vh;
         width: 100%;
     }
     
