@@ -196,12 +196,21 @@ body.admin-page,
     display: flex;
     align-items: center;
     text-decoration: none;
+    padding: 0;
+    margin: 0;
 }
 
 .millies-logo-image {
     height: 50px;
     width: auto;
     display: block;
+    object-fit: contain;
+    padding: 8px 0;
+    transition: opacity 0.3s ease;
+}
+
+.millies-logo-image:hover {
+    opacity: 0.8;
 }
 
 .middle-nav {
@@ -1869,6 +1878,7 @@ footer {
 
     .millies-logo-image {
         height: 40px;
+        padding: 6px 0;
     }
 
     .mobile-menu-toggle {
