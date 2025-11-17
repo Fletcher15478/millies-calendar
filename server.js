@@ -61,16 +61,42 @@ console.log('Data directory exists:', fs.existsSync(dataDir), dataDir);
 
 const eventsFile = path.join(dataDir, 'events.json');
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'event-' + uniqueSuffix + path.extname(file.originalname));
+// Helper function to upload image to Supabase Storage
+async function uploadImageToSupabase(file) {
+  if (!supabase || !file) return null;
+
+  try {
+    const fileExt = path.extname(file.originalname);
+    const fileName = `event-${Date.now()}-${Math.round(Math.random() * 1E9)}${fileExt}`;
+    const filePath = `event-photos/${fileName}`;
+
+    // Upload to Supabase Storage
+    const { data, error } = await supabase.storage
+      .from('event-photos')
+      .upload(filePath, file.buffer, {
+        contentType: file.mimetype,
+        upsert: false
+      });
+
+    if (error) {
+      console.error('Error uploading to Supabase Storage:', error);
+      return null;
+    }
+
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from('event-photos')
+      .getPublicUrl(filePath);
+
+    return urlData.publicUrl;
+  } catch (error) {
+    console.error('Error in uploadImageToSupabase:', error);
+    return null;
   }
-});
+}
+
+// Configure multer for file uploads (memory storage for Supabase)
+const storage = multer.memoryStorage();
 
 const upload = multer({ 
   storage: storage,
@@ -389,6 +415,20 @@ app.post('/api/events', upload.single('photo'), async (req, res) => {
       return false;
     };
 
+    // Upload image to Supabase Storage if provided
+    let photoUrl = null;
+    if (req.file && supabase) {
+      photoUrl = await uploadImageToSupabase(req.file);
+      if (!photoUrl) {
+        console.warn('Failed to upload image to Supabase Storage, continuing without photo');
+      }
+    } else if (req.file && !supabase) {
+      // Fallback to local storage if Supabase not configured
+      photoUrl = `/uploads/${req.file.filename}`;
+      // Save file locally
+      fs.writeFileSync(path.join(uploadsDir, req.file.filename), req.file.buffer);
+    }
+
     const eventData = {
       title,
       date,
@@ -399,7 +439,7 @@ app.post('/api/events', upload.single('photo'), async (req, res) => {
       outside: toBoolean(outside),
       publicEvent: toBoolean(publicEvent),
       petFriendly: toBoolean(petFriendly),
-      photo: req.file ? `/uploads/${req.file.filename}` : null
+      photo: photoUrl
     };
 
     if (supabase) {
@@ -412,8 +452,8 @@ app.post('/api/events', upload.single('photo'), async (req, res) => {
       
       if (error) throw error;
       console.log('Event saved to Supabase:', data.id);
-      if (req.file) {
-        console.log('Image saved to:', req.file.path);
+      if (photoUrl) {
+        console.log('Image saved to Supabase Storage:', photoUrl);
       }
       res.status(201).json({ ...data, id: data.id.toString() });
     } else {
@@ -425,7 +465,9 @@ app.post('/api/events', upload.single('photo'), async (req, res) => {
         createdAt: new Date().toISOString()
       };
       if (req.file) {
-        console.log('Image saved to:', req.file.path);
+        // Save file locally for fallback
+        fs.writeFileSync(path.join(uploadsDir, req.file.filename), req.file.buffer);
+        console.log('Image saved to:', path.join(uploadsDir, req.file.filename));
       }
       events.push(event);
       saveEvents(events);
@@ -457,7 +499,37 @@ app.put('/api/events/:id', upload.single('photo'), async (req, res) => {
       if (outside !== undefined) updateData.outside = outside === 'true' || outside === true;
       if (publicEvent !== undefined) updateData.publicEvent = publicEvent === 'true' || publicEvent === true;
       if (petFriendly !== undefined) updateData.petFriendly = petFriendly === 'true' || petFriendly === true;
-      if (req.file) updateData.photo = `/uploads/${req.file.filename}`;
+      
+      // Upload new image to Supabase Storage if provided
+      if (req.file) {
+        // Get old photo URL to delete it later
+        const { data: oldEvent } = await supabase
+          .from('events')
+          .select('photo')
+          .eq('id', req.params.id)
+          .single();
+        
+        const newPhotoUrl = await uploadImageToSupabase(req.file);
+        if (newPhotoUrl) {
+          updateData.photo = newPhotoUrl;
+          
+          // Delete old image from Supabase Storage if it exists
+          if (oldEvent?.photo && oldEvent.photo.includes('supabase.co/storage')) {
+            try {
+              const oldPath = oldEvent.photo.split('/storage/v1/object/public/event-photos/')[1];
+              if (oldPath) {
+                await supabase.storage
+                  .from('event-photos')
+                  .remove([`event-photos/${oldPath}`]);
+              }
+            } catch (deleteError) {
+              console.warn('Could not delete old image:', deleteError);
+            }
+          }
+        } else {
+          console.warn('Failed to upload new image, keeping old photo');
+        }
+      }
 
       const { data, error } = await supabase
         .from('events')
@@ -497,7 +569,15 @@ app.put('/api/events/:id', upload.single('photo'), async (req, res) => {
         outside: outside === 'true' || outside === true || (outside === undefined ? existingEvent.outside : false),
         publicEvent: publicEvent === 'true' || publicEvent === true || (publicEvent === undefined ? existingEvent.publicEvent : false),
         petFriendly: petFriendly === 'true' || petFriendly === true || (petFriendly === undefined ? existingEvent.petFriendly : false),
-        photo: req.file ? `/uploads/${req.file.filename}` : existingEvent.photo,
+        photo: (() => {
+          if (req.file) {
+            // Save file locally for fallback
+            const filename = `event-${Date.now()}-${Math.round(Math.random() * 1E9)}${path.extname(req.file.originalname)}`;
+            fs.writeFileSync(path.join(uploadsDir, filename), req.file.buffer);
+            return `/uploads/${filename}`;
+          }
+          return existingEvent.photo;
+        })(),
         updatedAt: new Date().toISOString()
       };
 
