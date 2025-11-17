@@ -606,11 +606,27 @@ app.delete('/api/events/:id', async (req, res) => {
         return res.status(404).json({ error: 'Event not found' });
       }
 
-      // Delete photo file if it exists
+      // Delete photo from Supabase Storage if it exists
       if (event.photo) {
-        const photoPath = path.join(__dirname, event.photo);
-        if (fs.existsSync(photoPath)) {
-          fs.unlinkSync(photoPath);
+        if (event.photo.includes('supabase.co/storage')) {
+          // Extract file path from Supabase URL
+          try {
+            const urlParts = event.photo.split('/storage/v1/object/public/event-photos/');
+            if (urlParts.length > 1) {
+              const filePath = `event-photos/${urlParts[1]}`;
+              await supabase.storage
+                .from('event-photos')
+                .remove([filePath]);
+            }
+          } catch (deleteError) {
+            console.warn('Could not delete image from Supabase Storage:', deleteError);
+          }
+        } else {
+          // Fallback: delete local file
+          const photoPath = path.join(__dirname, event.photo);
+          if (fs.existsSync(photoPath)) {
+            fs.unlinkSync(photoPath);
+          }
         }
       }
 
