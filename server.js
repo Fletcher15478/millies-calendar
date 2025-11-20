@@ -97,13 +97,27 @@ async function uploadImageToSupabase(file) {
 
     console.log('Image uploaded successfully:', data);
 
-    // Get public URL
+    // Get public URL - try different methods
+    let publicUrl = null;
+    
+    // Method 1: getPublicUrl (returns { data: { publicUrl: ... } })
     const { data: urlData } = supabase.storage
       .from('event-photos')
       .getPublicUrl(filePath);
+    
+    if (urlData && urlData.publicUrl) {
+      publicUrl = urlData.publicUrl;
+    } else if (urlData && typeof urlData === 'string') {
+      // Sometimes it returns the URL directly
+      publicUrl = urlData;
+    } else {
+      // Construct URL manually if needed
+      const projectUrl = SUPABASE_URL.replace('/rest/v1', '');
+      publicUrl = `${projectUrl}/storage/v1/object/public/event-photos/${filePath}`;
+    }
 
-    console.log('Public URL generated:', urlData.publicUrl);
-    return urlData.publicUrl;
+    console.log('Public URL generated:', publicUrl);
+    return publicUrl;
   } catch (error) {
     console.error('Error in uploadImageToSupabase:', error);
     console.error('Error stack:', error.stack);
@@ -444,11 +458,10 @@ app.post('/api/events', upload.single('photo'), async (req, res) => {
       if (supabase) {
         photoUrl = await uploadImageToSupabase(req.file);
         if (!photoUrl) {
-          console.warn('Failed to upload image to Supabase Storage, continuing without photo');
-          // Return error to user so they know upload failed
-          return res.status(500).json({ 
-            error: 'Failed to upload image. Please check that the "event-photos" bucket exists in Supabase Storage.' 
-          });
+          console.error('Failed to upload image to Supabase Storage');
+          // Don't block event creation - allow event without photo
+          // User can see the error in console logs
+          console.warn('Continuing with event creation without photo');
         }
       } else {
         // Fallback to local storage if Supabase not configured
