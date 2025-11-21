@@ -28,7 +28,13 @@ const USER_NAMES = {
 const ALLOWED_EMAILS = Object.keys(USER_NAMES);
 
 if (SUPABASE_URL && SUPABASE_KEY) {
-  supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+  // Create Supabase client with service role key (bypasses RLS)
+  supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  });
   console.log('Connected to Supabase');
 } else {
   console.log('Supabase credentials not set, falling back to file-based storage');
@@ -75,21 +81,30 @@ async function uploadImageToSupabase(file) {
 
     console.log('Uploading image to Supabase Storage:', { fileName, filePath, size: file.buffer?.length, mimetype: file.mimetype });
 
-    // Upload to Supabase Storage
+    // Upload to Supabase Storage using service role (should bypass RLS)
     const { data, error } = await supabase.storage
       .from('event-photos')
       .upload(filePath, file.buffer, {
         contentType: file.mimetype,
-        upsert: false
+        upsert: false,
+        cacheControl: '3600'
       });
 
     if (error) {
       console.error('Error uploading to Supabase Storage:', error);
       console.error('Error details:', JSON.stringify(error, null, 2));
       
-      // If bucket doesn't exist, provide helpful error
+      // Check for specific error types
       if (error.message && error.message.includes('Bucket not found')) {
         console.error('⚠️  BUCKET NOT FOUND! Please create a bucket named "event-photos" in Supabase Storage');
+      } else if (error.message && error.message.includes('row-level security')) {
+        console.error('⚠️  RLS POLICY ISSUE! The bucket has RLS enabled. You need to:');
+        console.error('   1. Go to Supabase Dashboard → Storage → Policies');
+        console.error('   2. For the "event-photos" bucket, add a policy:');
+        console.error('      - Policy name: "Allow service role uploads"');
+        console.error('      - Allowed operation: INSERT');
+        console.error('      - Policy definition: true');
+        console.error('   OR disable RLS on the bucket (Settings → Disable RLS)');
       }
       
       return null;

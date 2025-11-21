@@ -11,23 +11,39 @@ Images are now stored in Supabase Storage instead of local files, so they persis
 5. Make it **Public** (so images can be accessed via URL)
 6. Click **Create bucket**
 
-## Step 2: Set Bucket Policies (Optional but Recommended)
+## Step 2: Configure Bucket Policies (REQUIRED)
+
+**IMPORTANT:** If you get a "row-level security policy" error, you need to configure policies:
+
+### Option A: Disable RLS (Easiest for public bucket)
+
+1. Go to **Storage** → `event-photos` bucket
+2. Click **Settings** (gear icon)
+3. **Disable RLS** toggle (turn it OFF)
+4. Save
+
+### Option B: Add Policies (More secure)
 
 1. Go to **Storage** → **Policies** → `event-photos`
-2. Add a policy for public read access:
+2. Click **New Policy** → **Create policy from scratch**
+
+3. **Policy 1: Public Read Access**
    - Policy name: "Public read access"
    - Allowed operation: `SELECT`
    - Policy definition: `true` (allows everyone to read)
+   - Click **Review** → **Save policy**
 
-3. Add a policy for authenticated uploads (if you want to restrict uploads):
-   - Policy name: "Authenticated uploads"
+4. **Policy 2: Service Role Upload Access** (REQUIRED for uploads)
+   - Policy name: "Service role uploads"
    - Allowed operation: `INSERT`
-   - Policy definition: `auth.role() = 'authenticated'`
+   - Policy definition: `true` (allows service role to upload)
+   - Click **Review** → **Save policy**
 
-   **OR** for service role access (what we're using):
-   - Policy name: "Service role full access"
-   - Allowed operation: `ALL`
+5. **Policy 3: Service Role Delete Access** (for updates/deletes)
+   - Policy name: "Service role deletes"
+   - Allowed operation: `DELETE`
    - Policy definition: `true`
+   - Click **Review** → **Save policy**
 
 ## Step 3: Verify Setup
 
@@ -56,7 +72,12 @@ That's it! The code will automatically:
 - Check that the public URL policy is set correctly
 - Look at browser console for any CORS errors
 
-### Upload fails
+### Upload fails with "row-level security policy" error
+- **This is the most common issue!** The bucket has RLS enabled but no policies
+- **Solution:** Follow Step 2 above to either disable RLS or add upload policies
+- Make sure you add an `INSERT` policy with definition `true` for service role access
+
+### Other upload issues
 - Check that your `SUPABASE_KEY` is the **service_role** key (not anon key)
 - Verify file size is under 5MB
 - Check Supabase Storage logs in dashboard
