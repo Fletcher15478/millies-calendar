@@ -69,8 +69,8 @@ npm run dev
 ```
 
 4. **Access the application:**
-- Landing page: `http://localhost:3000`
-- Calendar page: `http://localhost:3000/calendar.html`
+- Landing page: `http://localhost:3000/events` (or `http://localhost:3000/` redirects to `/events`)
+- Calendar page: `http://localhost:3000/calendar`
 - Admin panel: `http://localhost:3000/admin.html`
 
 ## Production Deployment

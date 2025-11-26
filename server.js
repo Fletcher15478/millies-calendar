@@ -729,6 +729,20 @@ app.delete('/api/events/:id', async (req, res) => {
 app.use(express.static('public'));
 app.use('/uploads', express.static('uploads'));
 
+// Clean URL routes
+app.get('/events', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/calendar', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'calendar.html'));
+});
+
+// Root redirects to /events
+app.get('/', (req, res) => {
+  res.redirect('/events');
+});
+
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on http://0.0.0.0:${PORT}`);
