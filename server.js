@@ -445,7 +445,7 @@ app.get('/api/events/:id', async (req, res) => {
 // Create new event
 app.post('/api/events', upload.single('photo'), async (req, res) => {
   try {
-    const { title, date, description, time, featured, location, outside, publicEvent, petFriendly } = req.body;
+    const { title, date, description, time, endTime, featured, location, outside, publicEvent, petFriendly, eventbriteLink } = req.body;
     
     console.log('Received location:', location);
     
