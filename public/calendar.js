@@ -178,7 +178,7 @@ function createEventTile(event) {
                     ${badgesHtml}
                     <p class="event-tile-description-full">${escapeHtml(event.description)}</p>
                     ${locationHtml}
-                    ${event.eventbriteLink ? `<a href="${escapeHtml(event.eventbriteLink)}" target="_blank" rel="noopener noreferrer" class="find-out-more-link">find out more here</a>` : ''}
+                    ${event.eventbriteLink ? `<a href="${escapeHtml(event.eventbriteLink)}" target="_blank" rel="noopener noreferrer" class="find-out-more-link">Find Out More Here</a>` : ''}
                     <a href="${calendarUrl}" target="_blank" rel="noopener noreferrer" class="add-to-calendar-btn">📅 Add to Calendar</a>
                 </div>
             </div>
