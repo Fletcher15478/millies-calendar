@@ -1155,26 +1155,21 @@ main {
     box-shadow: 0 4px 12px rgba(239, 75, 129, 0.3);
 }
 
-.find-out-more-btn {
+.find-out-more-link {
     display: inline-block;
-    background: #9ccfc6;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 8px;
-    text-decoration: none;
+    color: #ef4b81;
+    text-decoration: underline;
     font-family: 'program-narrow', sans-serif;
-    font-weight: 700;
+    font-weight: 500;
     font-size: 1rem;
     margin-top: 15px;
     margin-right: 10px;
     transition: all 0.3s ease;
 }
 
-.find-out-more-btn:hover {
-    background: #7fb8ad;
+.find-out-more-link:hover {
+    color: #d43a6b;
     opacity: 0.9;
-    transform: scale(1.02);
-    box-shadow: 0 4px 12px rgba(156, 207, 198, 0.3);
 }
 
 .event-tile-location-wrapper {
