@@ -493,7 +493,9 @@ app.post('/api/events', upload.single('photo'), async (req, res) => {
       date,
       description,
       time,
+      endTime: endTime || null,
       location: (location && typeof location === 'string' && location.trim()) ? location.trim() : null,
+      eventbriteLink: (eventbriteLink && typeof eventbriteLink === 'string' && eventbriteLink.trim()) ? eventbriteLink.trim() : null,
       featured: toBoolean(featured),
       outside: toBoolean(outside),
       publicEvent: toBoolean(publicEvent),
@@ -542,7 +544,7 @@ app.post('/api/events', upload.single('photo'), async (req, res) => {
 // Update event
 app.put('/api/events/:id', upload.single('photo'), async (req, res) => {
   try {
-    const { title, date, description, time, featured, location, outside, publicEvent, petFriendly } = req.body;
+    const { title, date, description, time, endTime, featured, location, outside, publicEvent, petFriendly, eventbriteLink } = req.body;
 
     if (supabase) {
       // Use Supabase
@@ -551,8 +553,12 @@ app.put('/api/events/:id', upload.single('photo'), async (req, res) => {
       if (date !== undefined) updateData.date = date;
       if (description !== undefined) updateData.description = description;
       if (time !== undefined) updateData.time = time;
+      if (endTime !== undefined) updateData.endTime = endTime || null;
       if (location !== undefined) {
         updateData.location = (location && typeof location === 'string' && location.trim()) ? location.trim() : null;
+      }
+      if (eventbriteLink !== undefined) {
+        updateData.eventbriteLink = (eventbriteLink && typeof eventbriteLink === 'string' && eventbriteLink.trim()) ? eventbriteLink.trim() : null;
       }
       if (featured !== undefined) updateData.featured = featured === 'true' || featured === true;
       if (outside !== undefined) updateData.outside = outside === 'true' || outside === true;

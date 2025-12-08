@@ -317,6 +317,22 @@ function openModal(event = null) {
         document.getElementById('event-minute').value = timeParts.minute;
         document.getElementById('event-ampm').value = timeParts.ampm;
         
+        // Parse end time into dropdowns
+        if (event.endTime) {
+            const endTimeParts = parseTimeToDropdowns(event.endTime);
+            document.getElementById('event-end-hour').value = endTimeParts.hour;
+            document.getElementById('event-end-minute').value = endTimeParts.minute;
+            document.getElementById('event-end-ampm').value = endTimeParts.ampm;
+        } else {
+            // Default to same time if no end time
+            document.getElementById('event-end-hour').value = timeParts.hour;
+            document.getElementById('event-end-minute').value = timeParts.minute;
+            document.getElementById('event-end-ampm').value = timeParts.ampm;
+        }
+        
+        // Set Eventbrite link
+        document.getElementById('event-eventbrite').value = event.eventbriteLink || '';
+        
         if (event.photo) {
             photoPreview.innerHTML = `<img src="${getImageUrl(event.photo)}" alt="Current photo">`;
         } else {
@@ -329,6 +345,10 @@ function openModal(event = null) {
         document.getElementById('event-outside').checked = false;
         document.getElementById('event-public').checked = false;
         document.getElementById('event-pet-friendly').checked = false;
+        // Reset end time to default (same as start time)
+        document.getElementById('event-end-hour').value = '';
+        document.getElementById('event-end-minute').value = '';
+        document.getElementById('event-end-ampm').value = 'PM';
     }
     
     eventModal.style.display = 'block';
@@ -359,6 +379,24 @@ function getTimeFromDropdowns() {
     return `${hour24.toString().padStart(2, '0')}:${minute}`;
 }
 
+function getEndTimeFromDropdowns() {
+    const hour = document.getElementById('event-end-hour').value;
+    const minute = document.getElementById('event-end-minute').value;
+    const ampm = document.getElementById('event-end-ampm').value;
+    
+    if (!hour || !minute) return '';
+    
+    // Convert to 24-hour format for storage
+    let hour24 = parseInt(hour);
+    if (ampm === 'PM' && hour24 !== 12) {
+        hour24 += 12;
+    } else if (ampm === 'AM' && hour24 === 12) {
+        hour24 = 0;
+    }
+    
+    return `${hour24.toString().padStart(2, '0')}:${minute}`;
+}
+
 async function handleFormSubmit(e) {
     e.preventDefault();
     
@@ -368,8 +406,10 @@ async function handleFormSubmit(e) {
     formData.append('title', document.getElementById('event-title').value);
     formData.append('date', document.getElementById('event-date').value);
     formData.append('time', getTimeFromDropdowns());
+    formData.append('endTime', getEndTimeFromDropdowns());
     formData.append('description', document.getElementById('event-description').value);
     formData.append('location', document.getElementById('event-location').value);
+    formData.append('eventbriteLink', document.getElementById('event-eventbrite').value || '');
     formData.append('featured', document.getElementById('event-featured').checked ? 'true' : 'false');
     formData.append('outside', document.getElementById('event-outside').checked ? 'true' : 'false');
     formData.append('publicEvent', document.getElementById('event-public').checked ? 'true' : 'false');

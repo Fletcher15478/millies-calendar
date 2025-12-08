@@ -169,7 +169,7 @@ function createEventTile(event) {
                 <h3 class="event-tile-title">${escapeHtml(event.title)}</h3>
                 <div class="event-tile-date-time">
                     <span class="event-tile-date">${formattedDate}</span>
-                    <span class="event-tile-time">${formatTime(event.time)}</span>
+                    <span class="event-tile-time">${formatTimeRange(event.time, event.endTime)}</span>
                 </div>
                 <p class="event-tile-description-preview">${escapeHtml(event.description.substring(0, 100))}${event.description.length > 100 ? '...' : ''}</p>
             </div>
@@ -178,6 +178,7 @@ function createEventTile(event) {
                     ${badgesHtml}
                     <p class="event-tile-description-full">${escapeHtml(event.description)}</p>
                     ${locationHtml}
+                    ${event.eventbriteLink ? `<a href="${escapeHtml(event.eventbriteLink)}" target="_blank" rel="noopener noreferrer" class="find-out-more-btn">Find out more</a>` : ''}
                     <a href="${calendarUrl}" target="_blank" rel="noopener noreferrer" class="add-to-calendar-btn">📅 Add to Calendar</a>
                 </div>
             </div>
@@ -193,6 +194,15 @@ function formatTime(time) {
     const ampm = hour >= 12 ? 'PM' : 'AM';
     const hour12 = hour % 12 || 12;
     return `${hour12}:${minutes} ${ampm}`;
+}
+
+function formatTimeRange(startTime, endTime) {
+    const start = formatTime(startTime);
+    if (endTime) {
+        const end = formatTime(endTime);
+        return `${start} - ${end}`;
+    }
+    return start;
 }
 
 function escapeHtml(text) {
