@@ -960,9 +960,10 @@ main {
     position: relative;
     width: calc((100% - 75px) / 4);
     min-width: 240px;
+    height: 450px;
     min-height: 450px;
     border-radius: 12px;
-    overflow: visible;
+    overflow: hidden;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -1043,6 +1044,8 @@ main {
     z-index: 2;
     padding: 25px;
     color: white;
+    flex-shrink: 0;
+    min-width: 0;
 }
 
 .event-tile.no-image .event-tile-content {
@@ -1058,6 +1061,11 @@ main {
     margin-bottom: 12px;
     color: white;
     line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
 .event-tile.no-image .event-tile-title {
@@ -1099,6 +1107,12 @@ main {
     line-height: 1.5;
     color: rgba(255, 255, 255, 0.95);
     margin: 10px 0 0 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    max-height: 4.5em;
 }
 
 .event-tile-description-full {
