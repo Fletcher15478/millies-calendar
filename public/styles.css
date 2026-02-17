@@ -827,7 +827,7 @@ main {
 .landing-buttons {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
+    gap: 12px;
     width: 100%;
     max-width: 100%;
     padding: 0 20px;
@@ -839,7 +839,7 @@ main {
     background-position: center;
     background-repeat: no-repeat;
     color: white;
-    padding: 60px 40px;
+    padding: 40px 28px;
     border-radius: 16px;
     text-decoration: none;
     text-align: center;
@@ -853,7 +853,7 @@ main {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 350px;
+    min-height: 280px;
     border: 2px solid rgba(255, 255, 255, 0.3);
     position: relative;
     overflow: hidden;
