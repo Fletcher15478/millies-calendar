@@ -3,7 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Millies - Event Calendar</title>
+    <title>Millie's Event Calendar | Upcoming Events & Truck Stops</title>
+    <meta name="description" content="Find out what's happening at your nearest Millie's. See upcoming events, where our trucks are, and add events to your calendar.">
+    <meta name="keywords" content="Millie's, Millies Homemade, event calendar, ice cream events, truck schedule, upcoming events, Millie's calendar">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://millies-homemade.com/calendar">
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://millies-homemade.com/calendar">
+    <meta property="og:title" content="Millie's Event Calendar | Upcoming Events & Truck Stops">
+    <meta property="og:description" content="Find out what's happening at your nearest Millie's - events and where our trucks are hanging out.">
+    <meta property="og:image" content="https://millies-homemade.com/website%204.png">
+    <meta property="og:site_name" content="Millie's Homemade">
+    <meta property="og:locale" content="en_US">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Millie's Event Calendar | Upcoming Events & Truck Stops">
+    <meta name="twitter:description" content="Find out what's happening at your nearest Millie's - events and truck stops.">
+    <meta name="twitter:image" content="https://millies-homemade.com/website%204.png">
     <link rel="icon" type="image/svg+xml" href="images/cone pink.svg">
     <link rel="apple-touch-icon" href="images/cone pink.svg">
     <link rel="stylesheet" href="styles.css">
@@ -14,8 +31,8 @@
         <nav class="top-navbar">
             <div class="navbar-container">
                 <div class="navbar-logo">
-                    <a href="https://www.millieshomemade.com">
-                        <img src="images/millies-logo.png" alt="millie's" class="millies-logo-image">
+                    <a href="https://www.millieshomemade.com" aria-label="Millie's Homemade - Home">
+                        <img src="images/millies-logo.png" alt="Millie's Homemade Ice Cream - Home" class="millies-logo-image" fetchpriority="high">
                     </a>
                 </div>
                 <button class="mobile-menu-toggle" aria-label="Toggle menu">
@@ -42,11 +59,11 @@
             <div class="hero-container">
                 <div class="hero-two-col">
                     <div class="hero-image-wrap">
-                        <img src="website 4.png" alt="Millie's Event Calendar" class="calendar-header-image">
+                        <img src="website 4.png" alt="Millie's event calendar - ice cream cones and upcoming events at Millie's Homemade" class="calendar-header-image" fetchpriority="high">
                     </div>
                     <div class="hero-text">
-                        <span class="hero-title" style="color:#ef4b81; font-size:68px; line-height:1.1; display:block;">My Millie's does fun stuff</span>
-                        <span class="hero-description" style="color:#ef4b81; font-size:26px; line-height:1.6; display:block;">Find out what's happening at your nearest Millie's - or see where our trucks are hanging out, lately!</span>
+                        <h1 class="hero-title" style="color:#ef4b81; font-size:68px; line-height:1.1; display:block;">My Millie's does fun stuff</h1>
+                        <p class="hero-description" style="color:#ef4b81; font-size:26px; line-height:1.6; display:block;">Find out what's happening at your nearest Millie's - or see where our trucks are hanging out, lately!</p>
                     </div>
                 </div>
             </div>
@@ -113,6 +130,9 @@
         });
     </script>
     <script src="calendar.js"></script>
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"WebPage","name":"Millie's Event Calendar","description":"Find upcoming Millie's events and see where our trucks are. Add events to your calendar.","url":"https://millies-homemade.com/calendar","publisher":{"@type":"Organization","name":"Millie's Homemade","url":"https://www.millieshomemade.com"}}
+    </script>
 </body>
 </html>
 

@@ -3,7 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Millies - Events & Catering</title>
+    <title>Millie's Events & Catering | Parties, Fundraisers & More</title>
+    <meta name="description" content="Millie's does fun stuff: catering, parties, fundraisers, and events big and small. Ice cream, dairy-free gelato, and sweet experiences with you.">
+    <meta name="keywords" content="Millie's, Millies Homemade, ice cream events, catering, birthday parties, fundraisers, ice cream catering, dairy-free gelato, events">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://millies-homemade.com/events">
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://millies-homemade.com/events">
+    <meta property="og:title" content="Millie's Events & Catering | Parties, Fundraisers & More">
+    <meta property="og:description" content="Millie's does fun stuff: catering, parties, fundraisers, and events big and small. Ice cream, dairy-free gelato, and sweet experiences with you.">
+    <meta property="og:image" content="https://millies-homemade.com/website%203.png">
+    <meta property="og:site_name" content="Millie's Homemade">
+    <meta property="og:locale" content="en_US">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Millie's Events & Catering | Parties, Fundraisers & More">
+    <meta name="twitter:description" content="Millie's does fun stuff: catering, parties, fundraisers, and events big and small.">
+    <meta name="twitter:image" content="https://millies-homemade.com/website%203.png">
     <link rel="icon" type="image/svg+xml" href="images/cone pink.svg">
     <link rel="apple-touch-icon" href="images/cone pink.svg">
     <link rel="stylesheet" href="styles.css">
@@ -14,8 +31,8 @@
         <nav class="top-navbar">
             <div class="navbar-container">
                 <div class="navbar-logo">
-                    <a href="https://www.millieshomemade.com">
-                        <img src="images/millies-logo.png" alt="millie's" class="millies-logo-image">
+                    <a href="https://www.millieshomemade.com" aria-label="Millie's Homemade - Home">
+                        <img src="images/millies-logo.png" alt="Millie's Homemade Ice Cream - Home" class="millies-logo-image" fetchpriority="high">
                     </a>
                 </div>
                 <button class="mobile-menu-toggle" aria-label="Toggle menu">
@@ -42,11 +59,11 @@
             <div class="hero-container">
                 <div class="hero-two-col">
                     <div class="hero-image-wrap">
-                        <img src="website 3.png" alt="Millie's Events & Catering" class="calendar-header-image">
+                        <img src="website 3.png" alt="Millie's ice cream and events - parties, catering, and fun at Millie's Homemade" class="calendar-header-image" fetchpriority="high">
                     </div>
                     <div class="hero-text">
-                        <span class="hero-title" style="color:#ef4b81; font-size:68px; line-height:1.1; display:block;">My Millie's Does fun stuff</span>
-                        <span class="hero-description" style="color:#ef4b81; font-size:26px; line-height:1.6; display:block;">Millie's is more than just delicious ice creams & dairy-free gelatos! We cater, we party, we fundrasise and we scoop at events big & small. And - best of all - we wanna do these things with YOU.</span>
+                        <h1 class="hero-title" style="color:#ef4b81; font-size:68px; line-height:1.1; display:block;">My Millie's Does fun stuff</h1>
+                        <p class="hero-description" style="color:#ef4b81; font-size:26px; line-height:1.6; display:block;">Millie's is more than just delicious ice creams & dairy-free gelatos! We cater, we party, we fundrasise and we scoop at events big & small. And - best of all - we wanna do these things with YOU.</p>
                     </div>
                 </div>
             </div>
@@ -79,16 +96,16 @@
             <main>
                 <div class="landing-section">
                     <div class="landing-buttons">
-                        <a href="https://www.millieshomemade.com/birthday-parties/" class="landing-button" id="button-1" style="background-image: url('images/Birthdays - icon image.png');">
+                        <a href="https://www.millieshomemade.com/birthday-parties/" class="landing-button" id="button-1" style="background-image: url('images/Birthdays - icon image.png');" title="Parties at Millie's - birthday parties and events" aria-label="Parties at Millie's">
                             <span class="button-text">Parties at Millie's</span>
                         </a>
-                        <a href="https://www.millieshomemade.com/fundraising/" class="landing-button" id="button-2" style="background-image: url('images/Fundraiser - icon image.png');">
+                        <a href="https://www.millieshomemade.com/fundraising/" class="landing-button" id="button-2" style="background-image: url('images/Fundraiser - icon image.png');" title="Fundraisers with Millie's" aria-label="Fundraisers">
                             <span class="button-text">Fundraisers</span>
                         </a>
-                        <a href="https://www.millieshomemade.com/events/" class="landing-button" id="button-3" style="background-image: url('images/Catering.png');">
+                        <a href="https://www.millieshomemade.com/events/" class="landing-button" id="button-3" style="background-image: url('images/Catering.png');" title="Millie's catering and events" aria-label="Catering">
                             <span class="button-text">Catering</span>
                         </a>
-                        <a href="/calendar" class="landing-button" id="button-4" style="background-image: url('images/Calendar - icon image.png');">
+                        <a href="/calendar" class="landing-button" id="button-4" style="background-image: url('images/Calendar - icon image.png');" title="Millie's event calendar - upcoming events" aria-label="Event Calendar">
                             <span class="button-text">Calendar</span>
                         </a>
                     </div>
@@ -254,6 +271,9 @@
         window.addEventListener('load', () => {
             initStepScrolling();
         });
+    </script>
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"WebPage","name":"Millie's Events & Catering","description":"Millie's does fun stuff: catering, parties, fundraisers, and events. Ice cream, dairy-free gelato, and sweet experiences.","url":"https://millies-homemade.com/events","publisher":{"@type":"Organization","name":"Millie's Homemade","url":"https://www.millieshomemade.com"}}
     </script>
 </body>
 </html>

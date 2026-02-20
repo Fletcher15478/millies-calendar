@@ -369,7 +369,7 @@ body.admin-page,
     text-align: left;
 }
 
-/* Hero title - Meatball */
+/* Hero title - Meatball (h1 for SEO, same look) */
 .hero-title {
     font-family: 'Meatball', sans-serif;
     font-weight: normal;
@@ -378,12 +378,13 @@ body.admin-page,
     line-height: 1.1;
     display: block;
     text-align: left;
+    margin-top: 0;
     margin-bottom: 16px;
     text-transform: uppercase;
     letter-spacing: 2px;
 }
 
-/* Hero description - Halis GR Medium */
+/* Hero description - Halis GR Medium (p for SEO, same look) */
 .hero-description {
     font-family: 'Halis GR', sans-serif;
     font-weight: 500;
@@ -392,6 +393,7 @@ body.admin-page,
     line-height: 1.6;
     display: block;
     text-align: left;
+    margin-top: 0;
     margin-bottom: 0;
     max-width: 520px;
 }
