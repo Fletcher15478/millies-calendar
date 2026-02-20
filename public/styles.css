@@ -48,6 +48,24 @@
     font-display: swap;
 }
 
+/* Meatball - hero header */
+@font-face {
+    font-family: 'Meatball';
+    src: url('fonts/Meatball.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Halis GR Medium - hero description */
+@font-face {
+    font-family: 'Halis GR';
+    src: url('fonts/Halis%20GR/Ahmet%20Altun%20%20HalisGRMedium.otf') format('opentype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
 /* Millie's Logo Font */
 @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Montserrat:wght@400;600;700;800&family=Poppins:wght@400;500;600;700&display=swap');
 
@@ -351,10 +369,10 @@ body.admin-page,
     text-align: left;
 }
 
-/* Hero title - Program Nar OT */
+/* Hero title - Meatball */
 .hero-title {
-    font-family: 'program-narrow', sans-serif;
-    font-weight: 900;
+    font-family: 'Meatball', sans-serif;
+    font-weight: normal;
     color: #ef4b81;
     font-size: 68px;
     line-height: 1.1;
@@ -365,9 +383,10 @@ body.admin-page,
     letter-spacing: 2px;
 }
 
-/* Hero description - Poppins */
+/* Hero description - Halis GR Medium */
 .hero-description {
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Halis GR', sans-serif;
+    font-weight: 500;
     color: #ef4b81;
     font-size: 26px;
     line-height: 1.6;
