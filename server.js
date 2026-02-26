@@ -6,6 +6,7 @@ const path = require('path');
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const { createProxyMiddleware } = require('http-proxy-middleware');
 const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
@@ -47,6 +48,19 @@ const JWT_SECRET = process.env.JWT_SECRET || 'millies-secret-key-change-in-produ
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Proxy /shop paths to the ecomm shop (Next app with basePath /shop)
+// Example live shop URL: https://ecomm-5tdf.onrender.com/shop
+const ECOMM_BASE_URL = process.env.ECOMM_BASE_URL || 'https://ecomm-5tdf.onrender.com/shop';
+
+app.use(
+  '/shop',
+  createProxyMiddleware({
+    target: ECOMM_BASE_URL,
+    changeOrigin: true,
+    xfwd: true
+  })
+);
 
 // Ensure uploads and data directories exist
 const uploadsDir = path.join(__dirname, 'uploads');
