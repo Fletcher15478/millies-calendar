@@ -20,7 +20,7 @@ const logoutBtn = document.getElementById('logout-btn');
 const addEventBtn = document.getElementById('add-event-btn');
 const eventModal = document.getElementById('event-modal');
 const eventForm = document.getElementById('event-form');
-const closeModal = document.querySelector('.close');
+const eventModalCloseBtn = document.getElementById('event-modal-close');
 const cancelBtn = document.getElementById('cancel-btn');
 const adminEventsContainer = document.getElementById('admin-events-container');
 const photoInput = document.getElementById('event-photo');
@@ -191,14 +191,17 @@ if (logoutBtn) {
 
 // Event Listeners (only set up when admin panel is visible)
 function setupAdminEventListeners() {
+    if (adminEventListenersAttached) return;
+    adminEventListenersAttached = true;
+
     if (addEventBtn) {
         addEventBtn.addEventListener('click', () => openModal());
     }
     if (importCsvBtn) {
         importCsvBtn.addEventListener('click', () => openCsvModal());
     }
-    if (closeModal) {
-        closeModal.addEventListener('click', () => closeModalWindow());
+    if (eventModalCloseBtn) {
+        eventModalCloseBtn.addEventListener('click', () => closeModalWindow());
     }
     if (csvCloseBtn) {
         csvCloseBtn.addEventListener('click', () => closeCsvModal());
