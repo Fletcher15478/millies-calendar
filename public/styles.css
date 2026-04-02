@@ -1404,14 +1404,6 @@ main {
     top: 20px;
 }
 
-button.close {
-    background: none;
-    border: none;
-    padding: 0;
-    font: inherit;
-    line-height: 1;
-}
-
 .close:hover {
     color: var(--text-color);
 }
