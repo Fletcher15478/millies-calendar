@@ -306,10 +306,6 @@ function openModal(event = null) {
         document.getElementById('event-date').value = event.date;
         document.getElementById('event-description').value = event.description;
         document.getElementById('event-location').value = event.location || '';
-        document.getElementById('event-featured').checked = event.featured || false;
-        document.getElementById('event-outside').checked = event.outside || false;
-        document.getElementById('event-public').checked = event.publicEvent || false;
-        document.getElementById('event-pet-friendly').checked = event.petFriendly || false;
         
         // Parse time into dropdowns
         const timeParts = parseTimeToDropdowns(event.time);
@@ -341,10 +337,6 @@ function openModal(event = null) {
     } else {
         eventForm.reset();
         photoPreview.innerHTML = '';
-        document.getElementById('event-featured').checked = false;
-        document.getElementById('event-outside').checked = false;
-        document.getElementById('event-public').checked = false;
-        document.getElementById('event-pet-friendly').checked = false;
         // Reset end time to default (same as start time)
         document.getElementById('event-end-hour').value = '';
         document.getElementById('event-end-minute').value = '';
@@ -410,10 +402,6 @@ async function handleFormSubmit(e) {
     formData.append('description', document.getElementById('event-description').value);
     formData.append('location', document.getElementById('event-location').value);
     formData.append('eventbriteLink', document.getElementById('event-eventbrite').value || '');
-    formData.append('featured', document.getElementById('event-featured').checked ? 'true' : 'false');
-    formData.append('outside', document.getElementById('event-outside').checked ? 'true' : 'false');
-    formData.append('publicEvent', document.getElementById('event-public').checked ? 'true' : 'false');
-    formData.append('petFriendly', document.getElementById('event-pet-friendly').checked ? 'true' : 'false');
     
     if (photoInput.files[0]) {
         formData.append('photo', photoInput.files[0]);
